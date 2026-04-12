@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BiteSight | Luxury Login</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="login.css">
+</head>
+<body>
+
+  <!-- Decorative Background Auras -->
+  <div class="aura aura-1"></div>
+  <div class="aura aura-2"></div>
+  <div class="aura aura-3"></div>
+
+  <div class="login-wrapper">
+    <div class="login-card glass">
+      <div class="login-header">
+        <div class="brand-logo">🍽️</div>
+        <h1>مرحباً بك مجدداً</h1>
+        <p>BiteSight Dashboard | الوصول الآمن</p>
+      </div>
+
+      <form id="loginForm" class="login-form">
+        <div class="form-group" style="animation-delay: 0.1s;">
+          <label>البريد الإلكتروني</label>
+          <div class="input-wrapper">
+            <span class="input-icon">📧</span>
+            <input type="email" id="email" placeholder="email@example.com" required autocomplete="email">
+          </div>
+        </div>
+
+        <div class="form-group" style="animation-delay: 0.2s;">
+          <label>كلمة المرور</label>
+          <div class="input-wrapper">
+            <span class="input-icon">🔒</span>
+            <input type="password" id="password" placeholder="••••••••" required autocomplete="current-password">
+          </div>
+        </div>
+
+        <div class="form-footer" style="animation-delay: 0.3s;">
+          <label class="remember-label">
+            <input type="checkbox" id="remember">
+            <span class="checkmark"></span>
+            تذكرني
+          </label>
+          <a href="#" class="forgot-link">نسيت كلمة المرور؟</a>
+        </div>
+
+        <button type="submit" class="btn-primary-luxury" id="loginBtn" style="animation-delay: 0.4s;">
+          <span class="btn-text">دخول</span>
+          <span class="btn-glow"></span>
+        </button>
+      </form>
+
+      <div class="login-bottom" style="animation-delay: 0.5s;">
+        <p>ليس لديك صلاحية؟ <a href="#">اتصل بالمسؤول</a></p>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast-luxury">
+    <div class="toast-content">
+      <span class="toast-icon">⚠️</span>
+      <span class="toast-message" id="toastMessage">بيانات الدخول غير صحيحة</span>
+    </div>
+    <div class="toast-progress"></div>
+  </div>
+
+  <script src="login.js"></script>
+</body>
+</html>

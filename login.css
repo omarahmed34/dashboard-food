@@ -1,0 +1,219 @@
+/* ==================== LUXURY LOGIN MASTER DESIGN ==================== */
+:root {
+  /* Brand Colors - High-End Palette */
+  --p-h: 245; --p-s: 75%; --p-l: 64%; /* Primary: Vivid Purple */
+  --brand-primary: hsl(var(--p-h), var(--p-s), var(--p-l));
+  --brand-primary-glow: hsla(var(--p-h), var(--p-s), var(--p-l), 0.4);
+  
+  --bg-dark: #020617; /* Deepest Midnight */
+  --bg-card: rgba(15, 23, 42, 0.7); /* Translucent Backdrop */
+  --text-primary: #f1f5f9;
+  --text-secondary: #94a3b8;
+  --radius-lg: 32px;
+  --radius-md: 18px;
+  --transition-smooth: 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  --glass-blur: 32px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Cairo', sans-serif;
+  background: var(--bg-dark);
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  direction: rtl;
+  overflow: hidden;
+  position: relative;
+}
+
+/* Immersive Mesh Aura Background */
+.aura {
+  position: absolute;
+  width: 600px;
+  height: 600px;
+  border-radius: 50%;
+  filter: blur(140px);
+  z-index: -1;
+  opacity: 0.5;
+  animation: mesh-move 20s infinite alternate cubic-bezier(0.445, 0.05, 0.55, 0.95);
+}
+
+.aura-1 { top: -20%; right: -10%; background: var(--brand-primary); }
+.aura-2 { bottom: -20%; left: -10%; background: #3b82f6; animation-delay: -5s; }
+.aura-3 { top: 40%; left: 30%; background: #8b5cf6; animation-delay: -10s; }
+
+@keyframes mesh-move {
+  from { transform: translate(0, 0) scale(1); }
+  to { transform: translate(100px, 100px) scale(1.2); }
+}
+
+/* Login Card Luxury Design */
+.login-wrapper {
+  perspective: 1000px;
+  width: 100%;
+  max-width: 480px;
+  padding: 24px;
+  z-index: 10;
+}
+
+.login-card {
+  background: var(--bg-card);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid rgba(255, 255, 255, 0.08); /* Minimal inner border */
+  border-radius: var(--radius-lg);
+  padding: 56px 48px;
+  box-shadow: 
+    0 25px 50px -12px rgba(0, 0, 0, 0.5),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.05); /* Double border look */
+  animation: scale-up 0.8s var(--transition-smooth) both;
+  overflow: hidden;
+  position: relative;
+}
+
+.login-card::before {
+  content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+  background: radial-gradient(circle, rgba(255,255,255,0.03) 0%, transparent 60%);
+  pointer-events: none;
+}
+
+@keyframes scale-up {
+  from { opacity: 0; transform: translateY(30px) scale(0.95); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Header & Brand */
+.login-header { text-align: center; margin-bottom: 40px; }
+.brand-logo {
+  font-size: 56px; margin-bottom: 24px;
+  filter: drop-shadow(0 0 20px var(--brand-primary-glow));
+  animation: logo-float 4s infinite ease-in-out;
+}
+
+@keyframes logo-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+.login-header h1 { font-size: 28px; font-weight: 900; letter-spacing: -1px; margin-bottom: 12px; }
+.login-header p { color: var(--text-secondary); font-size: 15px; font-weight: 700; opacity: 0.8; }
+
+/* Form Elements Luxe */
+.login-form { display: flex; flex-direction: column; gap: 32px; }
+.form-group { display: flex; flex-direction: column; gap: 12px; animation: group-in 0.6s var(--transition-smooth) both; }
+
+@keyframes group-in {
+  from { opacity: 0; transform: translateY(15px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.form-group label {
+  font-size: 13px; font-weight: 800; color: var(--text-secondary);
+  text-transform: uppercase; letter-spacing: 1px; margin-right: 6px;
+}
+
+.input-wrapper { position: relative; display: flex; align-items: center; }
+.input-icon { position: absolute; right: 20px; font-size: 18px; color: var(--text-secondary); opacity: 0.6; }
+
+.input-wrapper input {
+  width: 100%;
+  padding: 18px 56px 18px 24px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 2px solid rgba(255, 255, 255, 0.04);
+  border-radius: var(--radius-md);
+  color: #fff;
+  font-size: 16px;
+  font-weight: 600;
+  transition: all var(--transition-smooth);
+}
+
+.input-wrapper input:focus {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: var(--brand-primary);
+  box-shadow: 0 0 30px -10px var(--brand-primary-glow);
+  transform: translateY(-2px);
+}
+
+.input-wrapper input::placeholder { color: var(--text-muted); opacity: 0.5; }
+
+/* Footer & Buttons */
+.form-footer {
+  display: flex; justify-content: space-between; align-items: center;
+  font-size: 14px; font-weight: 800; animation: group-in 0.6s var(--transition-smooth) both;
+}
+
+.remember-label { display: flex; align-items: center; gap: 10px; cursor: pointer; color: var(--text-secondary); }
+.remember-label input { width: 18px; height: 18px; accent-color: var(--brand-primary); cursor: pointer; }
+
+.forgot-link { color: var(--brand-primary-glow); color: var(--brand-primary); opacity: 0.8; transition: var(--transition-smooth); }
+.forgot-link:hover { opacity: 1; text-decoration: underline; }
+
+.btn-primary-luxury {
+  position: relative;
+  background: linear-gradient(135deg, var(--brand-primary), #a855f7);
+  color: #fff;
+  padding: 20px;
+  border-radius: var(--radius-md);
+  font-weight: 900;
+  font-size: 18px;
+  box-shadow: 0 15px 35px -5px hsla(var(--p-h), var(--p-s), var(--p-l), 0.4);
+  overflow: hidden;
+  transition: all var(--transition-smooth);
+  animation: group-in 0.6s var(--transition-smooth) both;
+}
+
+.btn-primary-luxury:hover {
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: 0 20px 45px -5px hsla(var(--p-h), var(--p-s), var(--p-l), 0.6);
+}
+
+.btn-primary-luxury .btn-glow {
+  position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+  background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 70%);
+  transition: 0.5s;
+  pointer-events: none;
+  opacity: 0;
+}
+
+.btn-primary-luxury:hover .btn-glow { opacity: 1; transform: translate(10%, 10%); }
+
+.login-bottom {
+  margin-top: 40px; text-align: center; font-size: 14px; font-weight: 800; color: var(--text-secondary);
+  animation: group-in 0.6s var(--transition-smooth) both;
+}
+.login-bottom a { color: var(--brand-primary); margin-right: 8px; }
+
+/* Luxury Toast Notification */
+.toast-luxury {
+  position: fixed; bottom: 40px; left: 40px;
+  background: var(--bg-card);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 12px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transform: translateX(-150%);
+  transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  z-index: 1000;
+}
+.toast-luxury.show { transform: translateX(0); }
+
+.toast-content { padding: 18px 32px; display: flex; align-items: center; gap: 16px; font-weight: 800; }
+.toast-progress { height: 4px; background: #ef4444; width: 0%; transition: width 3s linear; }
+.toast-luxury.show .toast-progress { width: 100%; }
+
+/* Selection & Scrollbar Unified (Syncing with Dashboard) */
+::selection { background: var(--brand-primary-glow); color: #fff; }
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--text-secondary); border-radius: 10px; }
+
+@media (max-width: 480px) {
+  .login-card { padding: 48px 32px; border-radius: 0; height: 100vh; max-width: 100%; border: none; display: flex; justify-content: center; }
+  .aura { opacity: 0.3; }
+}

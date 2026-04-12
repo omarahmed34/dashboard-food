@@ -1,0 +1,1063 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BiteSight Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="dashboard.css?v=3.0" />
+  <link rel="stylesheet" href="luxury.css?v=1.0" />
+  <script>
+    // Immediate Persistence Layer (Prevents Flicker)
+    (function() {
+      // 1. Theme Persistence
+      const savedTheme = localStorage.getItem("bitesight_theme");
+      if (savedTheme === "dark" || (!savedTheme && window.matchMedia("(prefers-color-scheme: dark)").matches)) {
+        document.documentElement.classList.add("dark-mode");
+      }
+      
+      // 2. Language & Direction Persistence
+      const savedLang = localStorage.getItem("bitesight_lang") || "ar";
+      if (savedLang === "en") {
+        document.documentElement.setAttribute("lang", "en");
+        document.documentElement.setAttribute("dir", "ltr");
+      } else {
+        document.documentElement.setAttribute("lang", "ar");
+        document.documentElement.setAttribute("dir", "rtl");
+      }
+      
+      // 3. Auth Guard
+      if (localStorage.getItem("bitesight_session") !== "active") {
+        window.location.replace("index.html");
+      }
+    })();
+  </script>
+</head>
+
+<body>
+
+  <div class="app">
+
+    <!-- ========== SIDEBAR ========== -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-logo">
+        <div class="logo-icon">🍽️</div>
+        <div class="logo-text">
+          <span class="logo-name">BiteSight</span>
+          <span class="logo-role">مركز التحكم</span>
+        </div>
+      </div>
+
+      <div class="sidebar-divider"></div>
+
+      <div class="sidebar-section">القائمة الرئيسية</div>
+      <nav class="sidebar-nav">
+        <a href="#" class="nav-link active" data-section="overview">
+          <span class="nav-icon">⚡</span>
+          <span class="nav-label">نظرة عامة</span>
+        </a>
+        <a href="#" class="nav-link" data-section="recipes">
+          <span class="nav-icon">📚</span>
+          <span class="nav-label">مكتبة الوصفات</span>
+        </a>
+        <a href="#" class="nav-link" data-section="ingredients">
+          <span class="nav-icon">🫙</span>
+          <span class="nav-label">قاعدة المكونات</span>
+        </a>
+        <a href="#" class="nav-link" data-section="users">
+          <span class="nav-icon">🧑‍🤝‍🧑</span>
+          <span class="nav-label">المجتمع</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-section">خدمة العملاء</div>
+      <nav class="sidebar-nav">
+        <a href="#" class="nav-link" data-section="favorites">
+          <span class="nav-icon">🔖</span>
+          <span class="nav-label">المحفوظات</span>
+        </a>
+        <a href="#" class="nav-link" data-section="contacts">
+          <span class="nav-icon">📧</span>
+          <span class="nav-label">رسائل العملاء</span>
+        </a>
+        <a href="#" class="nav-link" data-section="sine">
+          <span class="nav-icon">🕒</span>
+          <span class="nav-label">سجل الدخول</span>
+        </a>
+        <a href="#" class="nav-link" data-section="site">
+          <span class="nav-icon">ℹ️</span>
+          <span class="nav-label">عن الموقع</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-section">النظام</div>
+      <nav class="sidebar-nav">
+        <a href="#" class="nav-link" data-section="dashusers">
+          <span class="nav-icon">🔑</span>
+          <span class="nav-label">حسابات الدخول</span>
+        </a>
+        <a href="#" class="nav-link" data-section="settings">
+          <span class="nav-icon">🎛️</span>
+          <span class="nav-label">التفضيلات</span>
+        </a>
+        <button class="nav-link nav-logout" id="logoutBtn">
+          <span class="nav-icon">🚪</span>
+          <span class="nav-label">إنهاء الجلسة</span>
+        </button>
+      </nav>
+
+      <div class="sidebar-user">
+        <div class="user-info">
+          <span class="user-name" id="sidebarUserName">Admin</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ========== MAIN CONTENT ========== -->
+    <main class="main">
+
+      <!-- Topbar -->
+      <header class="topbar">
+        <div class="topbar-start">
+          <button class="menu-toggle" id="menuToggle">☰</button>
+          <div>
+            <div class="breadcrumb">
+              <span>BiteSight</span>
+              <span class="sep">/</span>
+              <span class="current" id="breadcrumbCurrent">نظرة عامة</span>
+            </div>
+            <h1 class="page-title" id="pageTitle">مرحبًا، <span id="adminNameTitle">Admin</span> 👋</h1>
+          </div>
+        </div>
+
+        <div class="topbar-end">
+          <div class="search-box">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="globalSearch" placeholder="ابحث عن وصفات، مكونات، مستخدمين..." autocomplete="off"
+              spellcheck="false">
+            <div id="searchDropdown" class="search-dropdown glass"></div>
+          </div>
+          <button class="icon-btn" id="langBtn" title="تغيير اللغة"
+            style="font-weight:bold; font-size:14px;">EN</button>
+          <button class="icon-btn" id="notifBtn">
+            🔔
+            <span class="notif-badge">3</span>
+          </button>
+          <button class="icon-btn" id="themeBtn">🌙</button>
+        </div>
+
+        <!-- Hidden Google Translate Element -->
+        <div id="google_translate_element" style="display:none;"></div>
+      </header>
+
+      <!-- Content Area -->
+      <div class="content" id="contentArea">
+
+        <!-- ========== OVERVIEW SECTION ========== -->
+        <section class="section active" id="section-overview">
+
+          <!-- KPI Cards -->
+          <div class="kpi-grid">
+            <div class="kpi-card kpi-purple">
+              <div class="kpi-head">
+                <span class="kpi-icon">📚</span>
+                <div>
+                  <span class="kpi-label">وصفات متاحة</span>
+                  <h2 class="kpi-value" id="kpiRecipes">0</h2>
+                </div>
+              </div>
+              <div class="kpi-foot">
+                <span class="trend up">↑ 8 هذا الشهر</span>
+              </div>
+            </div>
+
+            <div class="kpi-card kpi-teal">
+              <div class="kpi-head">
+                <span class="kpi-icon">🫙</span>
+                <div>
+                  <span class="kpi-label">عناصر المطبخ</span>
+                  <h2 class="kpi-value" id="kpiIngredients">0</h2>
+                </div>
+              </div>
+              <div class="kpi-foot">
+                <span class="trend up">↑ 4 جديدة</span>
+              </div>
+            </div>
+
+            <div class="kpi-card kpi-orange">
+              <div class="kpi-head">
+                <span class="kpi-icon">🧑‍🍳</span>
+                <div>
+                  <span class="kpi-label">طباخون مسجلون</span>
+                  <h2 class="kpi-value" id="kpiUsers">0</h2>
+                </div>
+              </div>
+              <div class="kpi-foot">
+                <span class="trend up">↑ 22 مستخدم</span>
+              </div>
+            </div>
+
+            <div class="kpi-card kpi-rose">
+              <div class="kpi-head">
+                <span class="kpi-icon">🔖</span>
+                <div>
+                  <span class="kpi-label">وصفات محفوظة</span>
+                  <h2 class="kpi-value" id="kpiFavorites">0</h2>
+                </div>
+              </div>
+              <div class="kpi-foot">
+                <span class="trend down">↓ عن الأسبوع الماضي</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Overview Grid -->
+          <div class="overview-grid">
+
+            <!-- Recent Recipes -->
+            <div class="panel panel-lg">
+              <div class="panel-head">
+                <h3>📋 آخر الوصفات</h3>
+                <button class="btn-sm" onclick="navigateTo('recipes')">عرض الكل</button>
+              </div>
+              <div class="panel-body" id="overviewRecipes"></div>
+            </div>
+
+            <!-- Recent Activity -->
+            <div class="panel">
+              <div class="panel-head">
+                <h3>🕐 آخر النشاطات</h3>
+              </div>
+              <div class="panel-body">
+                <div class="activity-list">
+                  <div class="activity-item">
+                    <span class="activity-dot dot-green"></span>
+                    <div>
+                      <span>تمت إضافة وصفة جديدة</span>
+                      <small>منذ 10 دقائق</small>
+                    </div>
+                  </div>
+                  <div class="activity-item">
+                    <span class="activity-dot dot-purple"></span>
+                    <div>
+                      <span>مستخدم جديد انضم للمجتمع</span>
+                      <small>منذ 34 دقيقة</small>
+                    </div>
+                  </div>
+                  <div class="activity-item">
+                    <span class="activity-dot dot-orange"></span>
+                    <div>
+                      <span>تم تعديل وصفة المكرونة</span>
+                      <small>منذ ساعة</small>
+                    </div>
+                  </div>
+                  <div class="activity-item">
+                    <span class="activity-dot dot-rose"></span>
+                    <div>
+                      <span>وصفة أُزيلت من المحفوظات</span>
+                      <small>منذ 3 ساعات</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Top Recipes -->
+            <div class="panel">
+              <div class="panel-head">
+                <h3>🔥 الأكثر طلبًا</h3>
+              </div>
+              <div class="panel-body" id="overviewTopRecipes"></div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="panel">
+              <div class="panel-head">
+                <h3>🚀 إجراءات سريعة</h3>
+              </div>
+              <div class="panel-body">
+                <div class="quick-grid">
+                  <button class="quick-btn" onclick="openModal('recipe')">
+                    <span>📚</span>
+                    <small>وصفة جديدة</small>
+                  </button>
+                  <button class="quick-btn" onclick="openModal('ingredient')">
+                    <span>🫙</span>
+                    <small>مكوّن جديد</small>
+                  </button>
+                  <button class="quick-btn" onclick="navigateTo('overview')">
+                    <span>📊</span>
+                    <small>التقارير</small>
+                  </button>
+                  <button class="quick-btn" onclick="navigateTo('settings')">
+                    <span>🎛️</span>
+                    <small>الإعدادات</small>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </section>
+
+        <!-- ========== RECIPES SECTION ========== -->
+        <section class="section" id="section-recipes">
+          <div class="section-header">
+            <div>
+              <h2>📚 مكتبة الوصفات</h2>
+              <p>إدارة جميع الوصفات المتاحة على المنصة</p>
+            </div>
+            <button class="btn-primary" onclick="openModal('recipe')">
+              <span>+</span> إضافة وصفة
+            </button>
+          </div>
+
+          <!-- Filters -->
+          <div class="filters-bar">
+            <div class="filter-group">
+              <label>التصنيف:</label>
+              <select id="filterCategory">
+                <option value="">الكل</option>
+                <option value="فطار">فطار</option>
+                <option value="غداء">غداء</option>
+                <option value="عشاء">عشاء</option>
+                <option value="سلطات">سلطات</option>
+                <option value="حلويات">حلويات</option>
+              </select>
+            </div>
+            <div class="filter-group">
+              <label>الصعوبة:</label>
+              <select id="filterDifficulty">
+                <option value="">الكل</option>
+                <option value="سهل جداً">سهل جداً</option>
+                <option value="سهل">سهل</option>
+                <option value="متوسط">متوسط</option>
+                <option value="صعب">صعب</option>
+                <option value="صعب جداً">صعب جداً</option>
+              </select>
+            </div>
+            <div class="filter-group">
+              <label>الحالة:</label>
+              <select id="filterStatus">
+                <option value="">الكل</option>
+                <option value="نشطة">نشطة</option>
+                <option value="مراجعة">مراجعة</option>
+                <option value="مخفية">مخفية</option>
+              </select>
+            </div>
+            <div class="filter-group search">
+              <input type="text" id="searchRecipes" placeholder="ابحث في الوصفات...">
+            </div>
+          </div>
+
+          <!-- Recipes Table -->
+          <div class="panel">
+            <div class="table-container">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th><input type="checkbox" id="selectAllRecipes"></th>
+                    <th>الوصفة</th>
+                    <th>التصنيف</th>
+                    <th>الوقت</th>
+                    <th>الصعوبة</th>
+                    <th>الحالة</th>
+                    <th>التفاعلات</th>
+                    <th>إجراءات</th>
+                  </tr>
+                </thead>
+                <tbody id="recipesTableBody"></tbody>
+              </table>
+            </div>
+            <div class="table-footer">
+              <span id="recipesCount">عرض 0 وصفة</span>
+              <div class="pagination" id="recipesPagination"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ========== INGREDIENTS SECTION ========== -->
+        <section class="section" id="section-ingredients">
+          <div class="section-header">
+            <div>
+              <h2>🫙 قاعدة المكونات</h2>
+              <p>إدارة المكونات المتاحة في النظام</p>
+            </div>
+            <button class="btn-primary" onclick="openModal('ingredient')">
+              <span>+</span> إضافة مكوّن
+            </button>
+          </div>
+
+          <!-- Ingredients Stats -->
+          <div class="stats-row">
+            <div class="stat-item">
+              <span class="stat-num" id="totalIngredients">0</span>
+              <span class="stat-label">إجمالي المكونات</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-num" id="activeIngredients">0</span>
+              <span class="stat-label">نشطة</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-num" id="usedIngredients">0</span>
+              <span class="stat-label">مستخدمة في وصفات</span>
+            </div>
+          </div>
+
+          <!-- Ingredients Grid -->
+          <div class="panel">
+            <div class="panel-head">
+              <h3>جميع المكونات</h3>
+              <input type="text" id="searchIngredients" placeholder="ابحث في المكونات..." class="inline-search">
+            </div>
+            <div class="ingredients-grid" id="ingredientsGrid"></div>
+          </div>
+        </section>
+
+        <!-- ========== USERS SECTION ========== -->
+        <section class="section" id="section-users">
+          <div class="section-header">
+            <div>
+              <h2>🧑‍🤝‍🧑 المجتمع</h2>
+              <p>إدارة المستخدمين والمشتركين</p>
+            </div>
+            <button class="btn-primary" onclick="openModal('user')">
+              <span>+</span> إضافة مستخدم
+            </button>
+          </div>
+
+          <!-- Users Stats -->
+          <div class="stats-row">
+            <div class="stat-item">
+              <span class="stat-num" id="totalUsers">0</span>
+              <span class="stat-label">إجمالي المستخدمين</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-num" id="activeUsers">0</span>
+              <span class="stat-label">نشطين</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-num" id="newUsersToday">0</span>
+              <span class="stat-label">جدد اليوم</span>
+            </div>
+          </div>
+
+          <!-- Users Table -->
+          <div class="panel">
+            <div class="table-container">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>المستخدم</th>
+                    <th>تاريخ التسجيل</th>
+                    <th>الوصفات المحفوظة</th>
+                    <th>الحالة</th>
+                    <th>إجراءات</th>
+                  </tr>
+                </thead>
+                <tbody id="usersTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+
+        <!-- ========== FAVORITES SECTION ========== -->
+        <section class="section" id="section-favorites">
+          <div class="section-header">
+            <div>
+              <h2>🔖 المحفوظات</h2>
+              <p>الوصفات المفضلة لدى المستخدمين</p>
+            </div>
+          </div>
+
+          <!-- Favorites Stats -->
+          <div class="stats-row">
+            <div class="stat-item">
+              <span class="stat-num" id="totalFavorites">0</span>
+              <span class="stat-label">إجمالي المحفوظات</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-num" id="todayFavorites">0</span>
+              <span class="stat-label">جديدة اليوم</span>
+            </div>
+          </div>
+
+          <!-- Favorites Grid -->
+          <div class="favorites-grid" id="favoritesGrid"></div>
+        </section>
+
+        <!-- ========== SETTINGS SECTION ========== -->
+        <section class="section" id="section-settings">
+          <div class="section-header">
+            <div>
+              <h2>🎛️ التفضيلات</h2>
+              <p>إعدادات النظام والملف الشخصي</p>
+            </div>
+          </div>
+
+          <div class="settings-grid">
+            <!-- Profile Settings -->
+            <div class="panel">
+              <div class="panel-head">
+                <h3>👤 الملف الشخصي</h3>
+              </div>
+              <div class="panel-body">
+                <div class="profile-form">
+                  <div class="form-group">
+                    <label>الاسم الكامل</label>
+                    <input type="text" value="Chef Admin" id="settingName">
+                  </div>
+                  <div class="form-group">
+                    <label>البريد الإلكتروني</label>
+                    <input type="email" value="admin@bitesight.com" id="settingEmail">
+                  </div>
+                  <div class="form-group">
+                    <label>رقم الهاتف</label>
+                    <input type="tel" value="+20 123 456 7890" id="settingPhone">
+                  </div>
+                  <button class="btn-primary" onclick="saveSettings()">حفظ التغييرات</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Appearance Settings -->
+            <div class="panel">
+              <div class="panel-head">
+                <h3>🎨 المظهر</h3>
+              </div>
+              <div class="panel-body">
+                <div class="setting-item">
+                  <div>
+                    <span class="setting-label">الوضع الليلي</span>
+                    <small>تفعيل المظهر الداكن</small>
+                  </div>
+                  <label class="toggle">
+                    <input type="checkbox" id="darkModeToggle">
+                    <span class="slider"></span>
+                  </label>
+                </div>
+                <div class="setting-item">
+                  <div>
+                    <span class="setting-label">الإشعارات</span>
+                    <small>تفعيل إشعارات النظام</small>
+                  </div>
+                  <label class="toggle">
+                    <input type="checkbox" id="notifToggle" checked>
+                    <span class="slider"></span>
+                  </label>
+                </div>
+                <div class="setting-item">
+                  <div>
+                    <span class="setting-label">اللغة</span>
+                    <small>لغة واجهة النظام</small>
+                  </div>
+                  <select id="languageSelect">
+                    <option value="ar" selected>العربية</option>
+                    <option value="en">English</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <!-- Security Settings -->
+            <div class="panel">
+              <div class="panel-head">
+                <h3>🔐 الأمان</h3>
+              </div>
+              <div class="panel-body">
+                <div class="form-group">
+                  <label>كلمة المرور الحالية</label>
+                  <input type="password" placeholder="••••••••">
+                </div>
+                <div class="form-group">
+                  <label>كلمة المرور الجديدة</label>
+                  <input type="password" placeholder="••••••••">
+                </div>
+                <div class="form-group">
+                  <label>تأكيد كلمة المرور</label>
+                  <input type="password" placeholder="••••••••">
+                </div>
+                <button class="btn-secondary">تغيير كلمة المرور</button>
+              </div>
+            </div>
+
+            <!-- System Info -->
+            <div class="panel">
+              <div class="panel-head">
+                <h3>ℹ️ معلومات النظام</h3>
+              </div>
+              <div class="panel-body">
+                <div class="info-list">
+                  <div class="info-item">
+                    <span>إصدار النظام</span>
+                    <strong>v2.4.1</strong>
+                  </div>
+                  <div class="info-item">
+                    <span>آخر تحديث</span>
+                    <strong>2026-03-28</strong>
+                  </div>
+                  <div class="info-item">
+                    <span>قاعدة البيانات</span>
+                    <strong class="status-ok">متصل</strong>
+                  </div>
+                  <div class="info-item">
+                    <span>التخزين</span>
+                    <strong>2.4 GB / 10 GB</strong>
+                  </div>
+                </div>
+                <button class="btn-secondary" style="margin-top:16px">تحديث النظام</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ========== DASH USERS SECTION ========== -->
+        <section class="section" id="section-dashusers">
+          <div class="section-header">
+            <div>
+              <h2>🔑 حسابات الدخول</h2>
+              <p>إدارة المستخدمين المصرح لهم بالدخول إلى لوحة التحكم</p>
+            </div>
+            <button class="btn-primary" onclick="openModal('dashuser')">
+              <span>+</span> إضافة حساب
+            </button>
+          </div>
+
+          <!-- Stats -->
+          <div class="stats-row">
+            <div class="stat-item">
+              <span class="stat-num" id="totalDashUsers">0</span>
+              <span class="stat-label">إجمالي الحسابات</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-num" id="adminDashUsers">0</span>
+              <span class="stat-label">مدراء</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-num" id="editorDashUsers">0</span>
+              <span class="stat-label">محررون</span>
+            </div>
+          </div>
+
+          <!-- Table -->
+          <div class="panel">
+            <div class="panel-head">
+              <h3>قائمة الحسابات</h3>
+              <input type="text" id="searchDashUsers" placeholder="ابحث بالاسم أو البريد..." class="inline-search">
+            </div>
+            <div class="table-container">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>الاسم</th>
+                    <th>البريد الإلكتروني</th>
+                    <th>الدور</th>
+                    <th>تاريخ الإنشاء</th>
+                    <th>إجراءات</th>
+                  </tr>
+                </thead>
+                <tbody id="dashUsersTableBody"></tbody>
+              </table>
+            </div>
+            <div class="table-footer">
+              <span id="dashUsersCount">عرض 0 حساب</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- ========== CONTACTS SECTION ========== -->
+        <section class="section" id="section-contacts">
+          <div class="section-header">
+            <div>
+              <h2>📧 رسائل العملاء</h2>
+              <p>عرض الرسائل الواردة من خلال صفحة "اتصل بنا"</p>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-head">
+              <h3>الرسائل الواردة</h3>
+              <input type="text" id="searchContacts" placeholder="ابحث في الرسائل..." class="inline-search">
+            </div>
+            <div class="table-container">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>الاسم</th>
+                    <th>البريد الإلكتروني</th>
+                    <th>الرسالة</th>
+                    <th>التاريخ</th>
+                    <th>إجراءات</th>
+                  </tr>
+                </thead>
+                <tbody id="contactsTableBody"></tbody>
+              </table>
+            </div>
+            <div class="table-footer">
+              <span id="contactsCount">عرض 0 رسالة</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- ========== SINE USERS SECTION ========== -->
+        <section class="section" id="section-sine">
+          <div class="section-header">
+            <div>
+              <h2>🕒 سجل دخول العملاء</h2>
+              <p>عرض قائمة المستخدمين الذين قاموا بتسجيل الدخول إلى الواجهة الأمامية</p>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-head">
+              <h3>سجل الدخول</h3>
+              <input type="text" id="searchSine" placeholder="ابحث في السجل..." class="inline-search">
+            </div>
+            <div class="table-container">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>اسم المستخدم</th>
+                    <th>البريد الإلكتروني</th>
+                    <th>آخر ظهور</th>
+                  </tr>
+                </thead>
+                <tbody id="sineTableBody"></tbody>
+              </table>
+            </div>
+            <div class="table-footer">
+              <span id="sineCount">عرض 0 سجل</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- ========== ABOUT US (SITE) SECTION ========== -->
+        <section class="section" id="section-site">
+          <div class="section-header">
+            <div>
+              <h2>ℹ️ إدارة "من نحن"</h2>
+              <p>تعديل محتوى صفحة "عنا" في الموقع للغتين العربية والإنجليزية</p>
+            </div>
+            <button class="btn-primary" onclick="saveAboutContent()">
+              حفظ التعديلات
+            </button>
+          </div>
+
+          <div class="settings-grid">
+            <!-- Arabic Content -->
+            <div class="panel">
+              <div class="panel-head">
+                <h3>🇸🇦 المحتوى العربي</h3>
+              </div>
+              <div class="panel-body">
+                <div class="form-group">
+                  <label>الشارة العليا (Badge)</label>
+                  <input type="text" id="about_ar_badge" placeholder="مثال: قصتنا">
+                </div>
+                <div class="form-group">
+                  <label>العنوان الرئيسي (H3)</label>
+                  <input type="text" id="about_ar_title" placeholder="العنوان الكبير في البداية">
+                </div>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label>عنوان الرؤية</label>
+                    <input type="text" id="about_ar_vision_title">
+                  </div>
+                  <div class="form-group">
+                    <label>محتوى الرؤية</label>
+                    <textarea id="about_ar_vision_text" rows="3"></textarea>
+                  </div>
+                </div>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label>عنوان المهمة</label>
+                    <input type="text" id="about_ar_mission_title">
+                  </div>
+                  <div class="form-group">
+                    <label>محتوى المهمة</label>
+                    <textarea id="about_ar_mission_text" rows="3"></textarea>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- English Content -->
+            <div class="panel">
+              <div class="panel-head">
+                <h3>🇺🇸 English Content</h3>
+              </div>
+              <div class="panel-body">
+                <div class="form-group">
+                  <label>Top Badge</label>
+                  <input type="text" id="about_en_badge" dir="ltr">
+                </div>
+                <div class="form-group">
+                  <label>Main Title (H3)</label>
+                  <input type="text" id="about_en_title" dir="ltr">
+                </div>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label>Vision Title</label>
+                    <input type="text" id="about_en_vision_title" dir="ltr">
+                  </div>
+                  <div class="form-group">
+                    <label>Vision Content</label>
+                    <textarea id="about_en_vision_text" rows="3" dir="ltr"></textarea>
+                  </div>
+                </div>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label>Mission Title</label>
+                    <input type="text" id="about_en_mission_title" dir="ltr">
+                  </div>
+                  <div class="form-group">
+                    <label>Mission Content</label>
+                    <textarea id="about_en_mission_text" rows="3" dir="ltr"></textarea>
+                  </div>
+                </div>
+                <div style="margin-top: 20px; text-align: center;">
+                    <a href="about.php" target="_blank" class="btn-primary" style="background: var(--secondary); display: inline-block;">
+                        👁️ عرض الصفحة العامة
+                    </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+      </div>
+    </main>
+  </div>
+
+  <!-- ========== MODALS ========== -->
+
+  <!-- Dash User Modal -->
+  <div class="modal" id="dashuserModal">
+    <div class="modal-overlay" onclick="closeModal('dashuser')"></div>
+    <div class="modal-content modal-sm">
+      <div class="modal-head">
+        <h3 id="dashuserModalTitle">إضافة حساب جديد</h3>
+        <button class="modal-close" onclick="closeModal('dashuser')">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label>الاسم الكامل *</label>
+          <input type="text" id="dashuserName" placeholder="مثال: محمد أحمد">
+        </div>
+        <div class="form-group">
+          <label>البريد الإلكتروني *</label>
+          <input type="email" id="dashuserEmail" placeholder="email@example.com" autocomplete="off">
+        </div>
+        <div class="form-group">
+          <label>كلمة المرور *</label>
+          <input type="password" id="dashuserPassword" placeholder="••••••••" autocomplete="new-password">
+          <small style="color:var(--text-muted);margin-top:4px">تُترك فارغة عند التعديل إن لم تُرد تغيير كلمة
+            المرور</small>
+        </div>
+        <div class="form-group">
+          <label>الدور</label>
+          <select id="dashuserRole">
+            <option value="admin">مدير</option>
+            <option value="editor">محرر</option>
+            <option value="viewer">مشاهد</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" onclick="closeModal('dashuser')">إلغاء</button>
+        <button class="btn-primary" onclick="saveDashUser()">حفظ الحساب</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recipe Modal -->
+  <div class="modal" id="recipeModal">
+    <div class="modal-overlay" onclick="closeModal('recipe')"></div>
+    <div class="modal-content">
+      <div class="modal-head">
+        <h3 id="recipeModalTitle">إضافة وصفة جديدة</h3>
+        <button class="modal-close" onclick="closeModal('recipe')">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-row">
+          <div class="form-group">
+            <label>اسم الوصفة *</label>
+            <input type="text" id="recipeName" placeholder="مثال: مكرونة بالبشاميل">
+          </div>
+          <div class="form-group">
+            <label>التصنيف *</label>
+            <select id="recipeCategory">
+              <option value="">اختر...</option>
+              <option value="فطار">فطار</option>
+              <option value="غداء">غداء</option>
+              <option value="عشاء">عشاء</option>
+              <option value="سلطات">سلطات</option>
+              <option value="حلويات">حلويات</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>وقت التحضير</label>
+            <input type="text" id="recipeTime" placeholder="مثال: 30 دقيقة">
+          </div>
+          <div class="form-group">
+            <label>مستوى الصعوبة</label>
+            <select id="recipeDifficulty">
+              <option value="سهل جداً">سهل جداً</option>
+              <option value="سهل">سهل</option>
+              <option value="متوسط">متوسط</option>
+              <option value="صعب">صعب</option>
+              <option value="صعب جداً">صعب جداً</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>صورة الوصفة</label>
+          <input type="file" id="recipeImageFile" accept="image/*">
+          <input type="hidden" id="recipeImageBase64">
+          <div id="recipeImagePreviewContainer" style="margin-top:10px; display:none;">
+            <img id="recipeImagePreview" src=""
+              style="max-height:100px; border-radius:10px; box-shadow:0 4px 10px rgba(0,0,0,0.1);">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>المكونات المطلوبة</label>
+          <div class="ingredients-select" id="recipeIngredientsSelect"></div>
+        </div>
+        <div class="form-group">
+          <label>طريقة التحضير</label>
+          <textarea id="recipeSteps" rows="4" placeholder="اكتب الخطوات، كل خطوة في سطر..."></textarea>
+        </div>
+        <div class="form-group">
+          <label>الحالة</label>
+          <select id="recipeStatus">
+            <option value="نشطة">نشطة</option>
+            <option value="مراجعة">مراجعة</option>
+            <option value="مخفية">مخفية</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" onclick="closeModal('recipe')">إلغاء</button>
+        <button class="btn-primary" onclick="saveRecipe()">حفظ الوصفة</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Ingredient Modal -->
+  <div class="modal" id="ingredientModal">
+    <div class="modal-overlay" onclick="closeModal('ingredient')"></div>
+    <div class="modal-content modal-sm">
+      <div class="modal-head">
+        <h3>إضافة مكوّن جديد</h3>
+        <button class="modal-close" onclick="closeModal('ingredient')">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label>اسم المكوّن *</label>
+          <input type="text" id="ingredientName" placeholder="مثال: طماطم">
+        </div>
+        <div class="form-group">
+          <label>الأيقونة (إيموجي)</label>
+          <input type="text" id="ingredientEmoji" placeholder="مثال: 🍅" maxlength="2">
+        </div>
+        <div class="form-group">
+          <label>التصنيف</label>
+          <select id="ingredientCategory">
+            <option value="خضروات">خضروات</option>
+            <option value="فواكه">فواكه</option>
+            <option value="بروتين">بروتين</option>
+            <option value="ألبان">ألبان</option>
+            <option value="توابل">توابل</option>
+            <option value="حبوب">حبوب</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" onclick="closeModal('ingredient')">إلغاء</button>
+        <button class="btn-primary" onclick="saveIngredient()">حفظ</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- User Modal -->
+  <div class="modal" id="userModal">
+    <div class="modal-overlay" onclick="closeModal('user')"></div>
+    <div class="modal-content modal-sm">
+      <div class="modal-head">
+        <h3>إضافة مستخدم جديد</h3>
+        <button class="modal-close" onclick="closeModal('user')">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label>الاسم الكامل *</label>
+          <input type="text" id="userName" placeholder="اسم المستخدم">
+        </div>
+        <div class="form-group">
+          <label>البريد الإلكتروني *</label>
+          <input type="email" id="userEmail" placeholder="email@example.com">
+        </div>
+        <div class="form-group">
+          <label>الدور</label>
+          <select id="userRole">
+            <option value="مستخدم">مستخدم</option>
+            <option value="مشرف">مشرف</option>
+            <option value="مدير">مدير</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" onclick="closeModal('user')">إلغاء</button>
+        <button class="btn-primary" onclick="saveUser()">حفظ</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete Confirmation Modal -->
+  <div class="modal" id="deleteModal">
+    <div class="modal-overlay" onclick="closeModal('delete')"></div>
+    <div class="modal-content modal-sm">
+      <div class="modal-head">
+        <h3>تأكيد الحذف</h3>
+        <button class="modal-close" onclick="closeModal('delete')">×</button>
+      </div>
+      <div class="modal-body center">
+        <div class="delete-icon">🗑️</div>
+        <p>هل أنت متأكد من حذف هذا العنصر؟</p>
+        <small>لا يمكن التراجع عن هذا الإجراء</small>
+      </div>
+      <div class="modal-footer center">
+        <button class="btn-secondary" onclick="closeModal('delete')">إلغاء</button>
+        <button class="btn-danger" id="confirmDeleteBtn">حذف</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div class="toast" id="toast">
+    <span class="toast-icon">✅</span>
+    <span class="toast-message" id="toastMessage">تم الحفظ بنجاح</span>
+  </div>
+
+  <!-- Google Translate script to handle automatic translations -->
+  <script type="text/javascript">
+    function googleTranslateElementInit() {
+      new google.translate.TranslateElement({ pageLanguage: 'ar', autoDisplay: false }, 'google_translate_element');
+    }
+  </script>
+  <script type="text/javascript"
+    src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+
+  <script src="dashboard.js?v=7.0"></script>
+</body>
+
+</html>
