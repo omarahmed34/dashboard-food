@@ -33,20 +33,34 @@ if (loginForm) {
         loginBtn.disabled = true;
 
         try {
-            const res  = await fetch("login.php", {
-                method:  "POST",
+            const res = await fetch("login.php", {
+                method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body:    JSON.stringify({ email, password })
+                body: JSON.stringify({ email, password })
             });
 
-            const json = await res.json();
+            // Check if response is not OK (e.g. 404, 500)
+            if (!res.ok) {
+                const errorText = await res.text();
+                console.error("Server Error:", errorText);
+                throw new Error(`Server returned ${res.status}: ${res.statusText}`);
+            }
+
+            let json;
+            try {
+                json = await res.json();
+            } catch (parseError) {
+                const rawText = await fetch("login.php", { method: "POST" }).then(r => r.text()).catch(() => "Unable to retrieve raw response");
+                console.error("JSON Parse Error. Raw response:", rawText);
+                throw new Error("استجابة الخادم غير صالحة (ليست JSON)");
+            }
 
             if (json.status === "success") {
                 // ── Save session ──────────────────────────────────────────
                 localStorage.setItem("bitesight_session", "active");
-                localStorage.setItem("user_name",  json.user?.name  || "Admin");
+                localStorage.setItem("user_name", json.user?.name || "Admin");
                 localStorage.setItem("user_email", json.user?.email || email);
-                localStorage.setItem("user_role",  json.user?.role  || "admin");
+                localStorage.setItem("user_role", json.user?.role || "admin");
 
                 // ── Success feedback then redirect ────────────────────────
                 if (btnText) btnText.textContent = "تم الدخول بنجاح! ✅";
@@ -68,16 +82,16 @@ if (loginForm) {
                 const card = document.querySelector(".login-card");
                 if (card) {
                     card.style.animation = "none";
-                    card.offsetHeight;   // trigger reflow
+                    card.offsetHeight; // trigger reflow
                     card.style.animation = "shake 0.4s ease-in-out";
                 }
             }
 
         } catch (err) {
-            showToast("خطأ في الاتصال بالخادم — تأكد من تشغيل XAMPP", "❌");
+            console.error("Login Error:", err);
+            showToast("خطأ في الاتصال: " + (err.message.includes("fetch") ? "تأكد من تشغيل XAMPP" : err.message), "❌");
             if (btnText) btnText.textContent = "دخول";
             loginBtn.disabled = false;
-            console.error(err);
         }
     });
 }

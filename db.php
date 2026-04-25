@@ -1,22 +1,19 @@
 <?php
-$host = 'sql312.infinityfree.com';
-$dbname = 'if0_41641864_if0_41641864_if0_12345678_dbname';
-$user = 'if0_41641864';
-$pass = 'O6fTYjh6f9';
-$charset = 'utf8mb4';
-
-$dsn = "mysql:host=$host;dbname=$dbname;charset=$charset";
-$options = [
-    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-    PDO::ATTR_EMULATE_PREPARES => false,
-];
+// Database Configuration
+$host = "127.0.0.1"; // Using 127.0.0.1 instead of localhost for faster connection on Windows
+$dbname = "bitesight_db";
+$user = "root";
+$pass = "";
 
 try {
-    $pdo = new PDO($dsn, $user, $pass, $options);
-} catch (\PDOException $e) {
-    // In production, you might not want to echo the full error, but for debugging now it's okay
-    echo json_encode(["status" => "error", "message" => "Connection failed: " . $e->getMessage()]);
+    $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8mb4", $user, $pass);
+    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    $pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
+} catch (PDOException $e) {
+    header('Content-Type: application/json; charset=utf-8');
+    echo json_encode([
+        "status" => "error", 
+        "message" => "خطأ في الاتصال بقاعدة البيانات: " . $e->getMessage()
+    ]);
     exit;
 }
-?>

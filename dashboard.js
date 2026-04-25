@@ -7,6 +7,7 @@ let dashUsers = [];  // dashlogen table
 let contacts = [];   // contact table
 let sineUsers = [];  // sine table
 let aboutContent = []; // about_page table
+let orders = [];       // orders table
 
 // State
 let currentSection = "";
@@ -20,10 +21,10 @@ async function fetchData() {
     const res = await fetch('api.php?action=getAllData');
     const json = await res.json();
     if (json.status === 'success') {
-      recipes     = json.data.recipes     || [];
+      recipes = json.data.recipes || [];
       ingredients = json.data.ingredients || [];
-      users       = json.data.users       || [];
-      favorites   = json.data.favorites   || [];
+      users = json.data.users || [];
+      favorites = json.data.favorites || [];
       renderAll();
     } else {
       showToast('خطأ في جلب البيانات: ' + json.message, "❌");
@@ -37,11 +38,26 @@ async function fetchData() {
   fetchContacts();
   fetchSineUsers();
   fetchAboutContent();
+  fetchOrders();
+}
+
+async function fetchOrders() {
+  try {
+    const res = await fetch('api.php?action=getOrders');
+    const json = await res.json();
+    if (json.status === 'success') {
+      orders = json.data || [];
+      renderOrdersTable();
+      updateKPIs();
+    }
+  } catch (err) {
+    console.error('fetchOrders error:', err);
+  }
 }
 
 async function fetchDashUsers() {
   try {
-    const res  = await fetch('api.php?action=getDashUsers');
+    const res = await fetch('api.php?action=getDashUsers');
     const json = await res.json();
     if (json.status === 'success') {
       dashUsers = json.data || [];
@@ -54,7 +70,7 @@ async function fetchDashUsers() {
 
 async function fetchContacts() {
   try {
-    const res  = await fetch('api.php?action=getContacts');
+    const res = await fetch('api.php?action=getContacts');
     const json = await res.json();
     if (json.status === 'success') {
       contacts = json.data || [];
@@ -67,7 +83,7 @@ async function fetchContacts() {
 
 async function fetchSineUsers() {
   try {
-    const res  = await fetch('api.php?action=getSineUsers');
+    const res = await fetch('api.php?action=getSineUsers');
     const json = await res.json();
     if (json.status === 'success') {
       sineUsers = json.data || [];
@@ -80,7 +96,7 @@ async function fetchSineUsers() {
 
 async function fetchAboutContent() {
   try {
-    const res  = await fetch('api.php?action=getAboutContent');
+    const res = await fetch('api.php?action=getAboutContent');
     const json = await res.json();
     if (json.status === 'success') {
       aboutContent = json.data || [];
@@ -118,7 +134,7 @@ function loadUserInfo() {
   const name = localStorage.getItem("user_name") || "Admin";
   const title = document.getElementById("adminNameTitle");
   const sidebar = document.getElementById("sidebarUserName");
-  if (title)   title.textContent   = name;
+  if (title) title.textContent = name;
   if (sidebar) sidebar.textContent = name;
 }
 
@@ -199,16 +215,17 @@ function navigateTo(section) {
 
   // Update breadcrumb
   const titles = {
-    overview:    "نظرة عامة",
-    recipes:     "مكتبة الوصفات",
+    overview: "نظرة عامة",
+    recipes: "مكتبة الوصفات",
     ingredients: "قاعدة المكونات",
-    users:       "المجتمع",
-    favorites:   "المحفوظات",
-    settings:    "التفضيلات",
-    dashusers:   "حسابات الدخول",
-    contacts:    "رسائل العملاء",
-    sine:        "سجل الدخول",
-    site:        "عن الموقع"
+    users: "المجتمع",
+    favorites: "المحفوظات",
+    settings: "التفضيلات",
+    dashusers: "حسابات الدخول",
+    contacts: "رسائل العملاء",
+    sine: "سجل الدخول",
+    site: "عن الموقع",
+    orders: "إدارة الطلبات"
   };
 
   const breadcrumb = document.getElementById("breadcrumbCurrent");
@@ -267,20 +284,44 @@ function initModals() {
     }
   });
 
-  // Handle Image Upload to Base64
+  // Handle Real Image Upload
   const fileInput = document.getElementById("recipeImageFile");
+  const previewImg = document.getElementById("recipeImagePreview");
+  const previewContainer = document.getElementById("recipeImagePreviewContainer");
+  const base64Input = document.getElementById("recipeImageBase64"); // We'll store the URL here instead
+
   if (fileInput) {
     fileInput.addEventListener("change", function () {
       const file = this.files[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = function (e) {
-          document.getElementById("recipeImageBase64").value = e.target.result;
-          document.getElementById("recipeImagePreview").src = e.target.result;
-          document.getElementById("recipeImagePreviewContainer").style.display = "block";
-        };
-        reader.readAsDataURL(file);
-      }
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        const base64 = e.target.result;
+        base64Input.value = base64; // Store Base64 string
+        previewImg.src = base64;
+        previewContainer.style.display = "block";
+        showToast("تم اختيار الصورة بنجاح", "🖼️");
+      };
+      reader.readAsDataURL(file);
+    });
+  }  // ← closing brace was missing here!
+
+  // ── User Avatar Upload ────────────────────────────────────
+  const userAvatarFile = document.getElementById('userAvatarFile');
+  if (userAvatarFile) {
+    userAvatarFile.addEventListener('change', function () {
+      const file = this.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        const preview = document.getElementById('userAvatarPreview');
+        if (preview) preview.src = e.target.result;
+        document.getElementById('userAvatarUrl').value = e.target.result;
+        showToast('تم اختيار الصورة', '🖼️');
+      };
+      reader.readAsDataURL(file);
     });
   }
 }
@@ -321,6 +362,21 @@ function closeModal(type) {
         if (el) el.value = "";
       });
     }
+    if (type === "user") {
+      // reset avatar
+      const preview = document.getElementById('userAvatarPreview');
+      if (preview) preview.src = 'https://i.pravatar.cc/100?img=1';
+      const avatarUrl = document.getElementById('userAvatarUrl');
+      if (avatarUrl) avatarUrl.value = '';
+      const fileInput = document.getElementById('userAvatarFile');
+      if (fileInput) fileInput.value = '';
+      const nameIn = document.getElementById('userName');
+      if (nameIn) nameIn.value = '';
+      const emailIn = document.getElementById('userEmail');
+      if (emailIn) emailIn.value = '';
+      const title = document.getElementById('userModalTitle');
+      if (title) title.textContent = 'إضافة مستخدم جديد';
+    }
   }
 }
 
@@ -360,6 +416,13 @@ function updateKPIs() {
 
   document.getElementById("totalFavorites").textContent = favorites.length;
   document.getElementById("todayFavorites").textContent = Math.floor(favorites.length * 0.2);
+
+  // Orders KPIs
+  if (document.getElementById("totalOrders")) {
+    document.getElementById("totalOrders").textContent = orders.length;
+    document.getElementById("pendingOrders").textContent = orders.filter(o => o.status === 'Pending' || o.status === 'قيد الانتظار').length;
+    document.getElementById("completedOrders").textContent = orders.filter(o => o.status === 'Completed' || o.status === 'تم التوصيل').length;
+  }
 }
 
 // ==================== OVERVIEW ====================
@@ -454,12 +517,12 @@ function getCategoryColor(cat) {
 }
 
 function getDifficultyColor(diff) {
-  const colors = { 
-    "سهل جداً": "green", 
-    "سهل": "green", 
-    "متوسط": "yellow", 
-    "صعب": "rose", 
-    "صعب جداً": "rose" 
+  const colors = {
+    "سهل جداً": "green",
+    "سهل": "green",
+    "متوسط": "yellow",
+    "صعب": "rose",
+    "صعب جداً": "rose"
   };
   return colors[diff] || "purple";
 }
@@ -536,7 +599,7 @@ function renderUsersTable() {
       </td>
       <td>
         <div class="row-actions">
-          <button class="row-btn edit">✏️</button>
+          <button class="row-btn edit" onclick="editUser(${u.id})">✏️</button>
           <button class="row-btn delete" onclick="confirmDelete('user', ${u.id})">🗑️</button>
         </div>
       </td>
@@ -552,9 +615,9 @@ function renderContactsTable() {
   const search = document.getElementById("searchContacts")?.value.toLowerCase();
   let filtered = [...contacts];
   if (search) {
-    filtered = filtered.filter(c => 
-      (c.name || "").toLowerCase().includes(search) || 
-      (c.email || "").toLowerCase().includes(search) || 
+    filtered = filtered.filter(c =>
+      (c.name || "").toLowerCase().includes(search) ||
+      (c.email || "").toLowerCase().includes(search) ||
       (c.message || "").toLowerCase().includes(search)
     );
   }
@@ -573,7 +636,7 @@ function renderContactsTable() {
       </td>
     </tr>
   `).join("");
-  
+
   const countEl = document.getElementById("contactsCount");
   if (countEl) countEl.textContent = `عرض ${filtered.length} رسالة`;
 }
@@ -586,8 +649,8 @@ function renderSineTable() {
   const search = document.getElementById("searchSine")?.value.toLowerCase();
   let filtered = [...sineUsers];
   if (search) {
-    filtered = filtered.filter(s => 
-      (s.full_name || "").toLowerCase().includes(search) || 
+    filtered = filtered.filter(s =>
+      (s.full_name || "").toLowerCase().includes(search) ||
       (s.email || "").toLowerCase().includes(search)
     );
   }
@@ -605,7 +668,7 @@ function renderSineTable() {
       <td><span style="color:var(--purple); font-weight:500;">${s.created_at || '-'}</span></td>
     </tr>
   `).join("");
-  
+
   const countEl = document.getElementById("sineCount");
   if (countEl) countEl.textContent = `عرض ${filtered.length} سجل`;
 }
@@ -613,7 +676,7 @@ function renderSineTable() {
 // ==================== SITE CONTENT (ABOUT US) ====================
 function renderAboutContent() {
   if (!aboutContent || aboutContent.length === 0) return;
-  
+
   aboutContent.forEach(row => {
     const lang = row.lang;
     ['badge', 'title', 'vision_title', 'vision_text', 'mission_title', 'mission_text'].forEach(col => {
@@ -760,6 +823,102 @@ function initFilters() {
 
   const sineSearch = document.getElementById("searchSine");
   if (sineSearch) sineSearch.addEventListener("input", renderSineTable);
+
+  const orderSearch = document.getElementById("searchOrders");
+  if (orderSearch) orderSearch.addEventListener("input", renderOrdersTable);
+}
+
+// ==================== ORDERS TABLE ====================
+function renderOrdersTable() {
+  const tbody = document.getElementById("ordersTableBody");
+  if (!tbody) return;
+
+  const search = document.getElementById("searchOrders")?.value.toLowerCase();
+  let filtered = [...orders];
+
+  if (search) {
+    filtered = filtered.filter(o =>
+      (o.full_name || "").toLowerCase().includes(search) ||
+      (o.phone || "").toLowerCase().includes(search) ||
+      (o.address || "").toLowerCase().includes(search) ||
+      (o.emall || o.email || "").toLowerCase().includes(search)
+    );
+  }
+
+  tbody.innerHTML = filtered.map(o => {
+    const recipe = recipes.find(r => r.id == o.recipe_id);
+    return `
+      <tr>
+        <td>${o.id}</td>
+        <td>
+          <div class="user-cell">
+            <div class="search-icon-box" style="width:32px; height:32px; font-size:14px;">👤</div>
+            <div>
+              <div style="font-weight:600;">${o.full_name}</div>
+              <small style="color:var(--text-muted);">${o.emall || o.email || '-'}</small>
+              <div style="font-size:10px; color:var(--purple); margin-top:2px;">📅 طلب في: ${o.order_date ? o.order_date.split(' ')[0] : '—'}</div>
+            </div>
+          </div>
+        </td>
+        <td>
+          <div style="font-size:13px;">📞 ${o.phone}</div>
+          ${o.location_link ? `<a href="${o.location_link}" target="_blank" style="font-size:11px; color:var(--purple);">📍 رابط الموقع</a>` : ''}
+        </td>
+        <td><div style="max-width:200px; font-size:12px; white-space:normal;">${o.address}</div></td>
+        <td>
+          <div style="font-weight:500;">📅 ${o.delivery_date}</div>
+          <small>🕒 ${o.delivery_time}</small>
+        </td>
+        <td>
+          ${recipe ? `
+            <div class="recipe-cell" style="gap:8px;">
+              <img src="${recipe.image}" style="width:30px; height:30px; border-radius:6px;">
+              <span style="font-size:13px;">${recipe.name}</span>
+            </div>
+          ` : '<span style="color:var(--text-muted);">غير محدد</span>'}
+        </td>
+        <td>
+          <select class="status-select" onchange="updateOrderStatus(${o.id}, this.value)" style="padding:4px 8px; border-radius:8px; font-size:12px; border:1px solid var(--border); background:var(--card-bg); color:var(--text-main);">
+            <option value="Pending" ${o.status === 'Pending' || o.status === 'قيد الانتظار' ? 'selected' : ''}>قيد الانتظار</option>
+            <option value="Processing" ${o.status === 'Processing' || o.status === 'جاري التنفيذ' ? 'selected' : ''}>جاري التنفيذ</option>
+            <option value="Completed" ${o.status === 'Completed' || o.status === 'تم التوصيل' ? 'selected' : ''}>تم التوصيل</option>
+            <option value="Cancelled" ${o.status === 'Cancelled' || o.status === 'ملغي' ? 'selected' : ''}>ملغي</option>
+          </select>
+        </td>
+        <td>
+          <div class="row-actions">
+            <button class="row-btn delete" onclick="confirmDelete('order', ${o.id})">🗑️</button>
+          </div>
+        </td>
+      </tr>
+    `;
+  }).join("");
+
+  const countEl = document.getElementById("ordersCount");
+  if (countEl) countEl.textContent = `عرض ${filtered.length} طلب`;
+}
+
+async function updateOrderStatus(id, newStatus) {
+  try {
+    const res = await fetch("api.php?action=updateOrderStatus", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id, status: newStatus })
+    });
+    const json = await res.json();
+    if (json.status === 'success') {
+      showToast("تم تحديث حالة الطلب", "✅");
+      // Update local data to avoid full fetch if possible, but full fetch is safer
+      const order = orders.find(o => o.id == id);
+      if (order) order.status = newStatus;
+      updateKPIs();
+    } else {
+      showToast("خطأ: " + json.message, "❌");
+    }
+  } catch (err) {
+    console.error("updateOrderStatus error:", err);
+    showToast("خطأ في الاتصال بالسيرفر", "❌");
+  }
 }
 
 // ==================== SMART GLOBAL SEARCH ====================
@@ -789,9 +948,9 @@ function initSearch() {
       ...sineUsers.filter(u => (u.full_name || "").toLowerCase().includes(query) || (u.email || "").toLowerCase().includes(query))
     ];
 
-    const matchedContacts = contacts.filter(c => 
-      (c.name || "").toLowerCase().includes(query) || 
-      (c.email || "").toLowerCase().includes(query) || 
+    const matchedContacts = contacts.filter(c =>
+      (c.name || "").toLowerCase().includes(query) ||
+      (c.email || "").toLowerCase().includes(query) ||
       (c.message || "").toLowerCase().includes(query)
     );
 
@@ -910,7 +1069,7 @@ function toggleIngredientSelect(id) {
   const numId = Number(id) || id; // Parse if it is numeric DB id
   const index = selectedRecipeIngredients.indexOf(numId);
   const strIndex = selectedRecipeIngredients.indexOf(String(id));
-  
+
   if (index === -1 && strIndex === -1) {
     selectedRecipeIngredients.push(numId);
   } else {
@@ -920,11 +1079,13 @@ function toggleIngredientSelect(id) {
 }
 
 async function saveRecipe() {
+  const saveBtn = document.querySelector("#recipeModal .btn-primary");
   const name = document.getElementById("recipeName").value.trim();
   const category = document.getElementById("recipeCategory").value;
   const time = document.getElementById("recipeTime").value.trim();
   const difficulty = document.getElementById("recipeDifficulty").value;
-  const image = document.getElementById("recipeImageBase64").value.trim() || 'https://images.unsplash.com/photo-1540189549336-e6e99c3679fe';
+  const imgInput = document.getElementById("recipeImageBase64");
+  const image = imgInput.value.trim() || 'https://images.unsplash.com/photo-1540189549336-e6e99c3679fe'; // Default if none
   const steps = document.getElementById("recipeSteps").value.trim();
   const status = document.getElementById("recipeStatus").value;
 
@@ -932,6 +1093,11 @@ async function saveRecipe() {
     showToast("يرجى ملء الحقول المطلوبة", "⚠️");
     return;
   }
+
+  // Prevent multiple clicks
+  const originalText = saveBtn.textContent;
+  saveBtn.disabled = true;
+  saveBtn.textContent = "جاري الحفظ...";
 
   const actionObj = {
     action: "saveRecipe",
@@ -952,12 +1118,16 @@ async function saveRecipe() {
     if (json.status === 'success') {
       showToast("تم حفظ الوصفة بنجاح", "✅");
       closeModal("recipe");
-      fetchData();
+      await fetchData(); // Refresh data from server
     } else {
       showToast("خطأ: " + json.message, "❌");
     }
   } catch (err) {
-    showToast("خطأ في الاتصال", "❌");
+    console.error(err);
+    showToast("خطأ في الاتصال بالسيرفر", "❌");
+  } finally {
+    saveBtn.disabled = false;
+    saveBtn.textContent = originalText;
   }
 }
 
@@ -972,7 +1142,7 @@ function editRecipe(id) {
   document.getElementById("recipeTime").value = recipe.time;
   document.getElementById("recipeDifficulty").value = recipe.difficulty;
   document.getElementById("recipeImageBase64").value = recipe.image;
-  
+
   const previewContainer = document.getElementById("recipeImagePreviewContainer");
   const previewImg = document.getElementById("recipeImagePreview");
   if (recipe.image) {
@@ -1043,51 +1213,101 @@ async function saveIngredient() {
   }
 }
 
+// ==================== EDIT USER ====================
+function editUser(id) {
+  const user = users.find(u => u.id == id);
+  if (!user) return;
+
+  document.getElementById('userModalTitle').textContent = 'تعديل بيانات المستخدم';
+  document.getElementById('userName').value = user.name;
+  document.getElementById('userEmail').value = user.email;
+
+  // Update preview image
+  const preview = document.getElementById('userAvatarPreview');
+  if (preview) preview.src = user.avatar || 'https://i.pravatar.cc/100?img=1';
+
+  // Set the current avatar URL in the hidden field (so it doesn't change unless uploaded)
+  document.getElementById('userAvatarUrl').value = user.avatar || '';
+
+  // Select the correct role
+  const roleSelect = document.getElementById('userRole');
+  if (roleSelect) {
+    // Note: We might need to map roles if they differ between DB strings and select values
+    roleSelect.value = user.role || 'مستخدم';
+  }
+
+  openModal('user');
+}
+
 async function saveUser() {
-  const name = document.getElementById("userName").value.trim();
-  const email = document.getElementById("userEmail").value.trim();
-  const role = document.getElementById("userRole").value;
+  const name = document.getElementById('userName').value.trim();
+  const email = document.getElementById('userEmail').value.trim();
+  const role = document.getElementById('userRole').value;
+  const avatarBase64 = document.getElementById('userAvatarUrl').value.trim();
 
   if (!name || !email) {
-    showToast("يرجى ملء الحقول المطلوبة", "⚠️");
+    showToast('يرجى ملء الحقول المطلوبة', '⚠️');
     return;
   }
 
-  const actionObj = {
-    action: "saveUser",
-    name, email, role,
-    avatar: `https://i.pravatar.cc/100?img=${Math.floor(Math.random() * 70)}`,
-    joinDate: new Date().toISOString().split("T")[0],
-    status: "جديد"
-  };
+  const saveBtn = document.getElementById('saveUserBtn');
+  if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = 'جاري الحفظ...'; }
 
   try {
-    const res = await fetch("api.php", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(actionObj)
+    let avatarUrl = `https://i.pravatar.cc/100?img=${Math.floor(Math.random() * 70)}`;
+
+    // If user picked an image, upload it first
+    if (avatarBase64 && avatarBase64.startsWith('data:image')) {
+      const formData = new FormData();
+      const blob = await (await fetch(avatarBase64)).blob();
+      formData.append('image', blob, 'avatar.jpg');
+
+      const uploadRes = await fetch('api.php?action=uploadImage', {
+        method: 'POST',
+        body: formData
+      });
+      const uploadJson = await uploadRes.json();
+      if (uploadJson.status === 'success') {
+        avatarUrl = uploadJson.url;
+      }
+    }
+
+    const res = await fetch('api.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'saveUser',
+        name, email, role,
+        avatar: avatarUrl,
+        joinDate: new Date().toISOString().split('T')[0],
+        status: 'جديد'
+      })
     });
     const json = await res.json();
     if (json.status === 'success') {
-      showToast("تمت إضافة المستخدم بنجاح", "✅");
-      closeModal("user");
+      showToast('تمت إضافة المستخدم بنجاح', '✅');
+      closeModal('user');
       fetchData();
     } else {
-      showToast("خطأ: " + json.message, "❌");
+      showToast('خطأ: ' + json.message, '❌');
     }
   } catch (err) {
-    showToast("خطأ في الاتصال", "❌");
+    console.error(err);
+    showToast('خطأ في الاتصال', '❌');
+  } finally {
+    if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = 'حفظ'; }
   }
 }
 
 // ==================== DELETE ====================
 function confirmDelete(type, id) {
   let actionName = "";
-  if      (type === "recipe")     actionName = "deleteRecipe";
+  if (type === "recipe") actionName = "deleteRecipe";
   else if (type === "ingredient") actionName = "deleteIngredient";
-  else if (type === "user")       actionName = "deleteUser";
-  else if (type === "dashuser")   actionName = "deleteDashUser";
-  else if (type === "contact")    actionName = "deleteContact";
+  else if (type === "user") actionName = "deleteUser";
+  else if (type === "dashuser") actionName = "deleteDashUser";
+  else if (type === "contact") actionName = "deleteContact";
+  else if (type === "order") actionName = "deleteOrder";
 
   deleteCallback = async () => {
     try {
@@ -1101,6 +1321,7 @@ function confirmDelete(type, id) {
         showToast("تم الحذف بنجاح", "✅");
         if (type === "dashuser") fetchDashUsers();
         else if (type === "contact") fetchContacts();
+        else if (type === "order") fetchOrders();
         else fetchData();
       } else {
         showToast("خطأ: " + json.message, "❌");
@@ -1181,38 +1402,49 @@ function renderDashUsersTable() {
   );
 
   // Stats
-  const totalEl  = document.getElementById("totalDashUsers");
-  const adminEl  = document.getElementById("adminDashUsers");
+  const totalEl = document.getElementById("totalDashUsers");
+  const adminEl = document.getElementById("adminDashUsers");
   const editorEl = document.getElementById("editorDashUsers");
-  if (totalEl)  totalEl.textContent  = dashUsers.length;
-  if (adminEl)  adminEl.textContent  = dashUsers.filter(u => u.role === "admin").length;
+  if (totalEl) totalEl.textContent = dashUsers.length;
+  if (adminEl) adminEl.textContent = dashUsers.filter(u => u.role === "admin").length;
   if (editorEl) editorEl.textContent = dashUsers.filter(u => u.role === "editor").length;
 
   const roleLabel = { admin: "مدير", editor: "محرر", viewer: "مشاهد" };
   const roleClass = { admin: "active", editor: "review", viewer: "hidden" };
 
-  tbody.innerHTML = filtered.map((u, i) => `
-    <tr>
-      <td style="color:var(--text-muted);font-weight:700">${i + 1}</td>
-      <td>
-        <div class="user-cell">
-          <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--purple),#a78bfa);display:grid;place-items:center;color:#fff;font-weight:800;font-size:14px;flex-shrink:0">
-            ${u.name.charAt(0).toUpperCase()}
+  tbody.innerHTML = filtered.map((u, i) => {
+    const passwordVal = u.password || '—';
+    const passwordDisplay = '*'.repeat(Math.min(passwordVal.length, 8));
+
+    return `
+      <tr>
+        <td style="color:var(--text-muted);font-weight:700">${i + 1}</td>
+        <td>
+          <div class="user-cell">
+            <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--purple),#a78bfa);display:grid;place-items:center;color:#fff;font-weight:800;font-size:14px;flex-shrink:0">
+              ${u.name.charAt(0).toUpperCase()}
+            </div>
+            <span style="font-weight:600">${u.name}</span>
           </div>
-          <span style="font-weight:600">${u.name}</span>
-        </div>
-      </td>
-      <td style="color:var(--text-secondary)">${u.email}</td>
-      <td><span class="badge badge-${roleClass[u.role] || 'review'}">${roleLabel[u.role] || u.role}</span></td>
-      <td style="color:var(--text-muted);font-size:13px">${u.created_at ? u.created_at.split(' ')[0] : '—'}</td>
-      <td>
-        <div class="row-actions">
-          <button class="row-btn edit" onclick="editDashUser(${u.id})" title="تعديل">✏️</button>
-          <button class="row-btn delete" onclick="confirmDelete('dashuser', ${u.id})" title="حذف">🗑️</button>
-        </div>
-      </td>
-    </tr>
-  `).join("");
+        </td>
+        <td style="color:var(--text-secondary)">${u.email}</td>
+        <td>
+          <div class="password-toggle-box" style="display:flex; align-items:center; gap:8px;">
+            <span id="pass-${u.id}" class="pass-text" data-actual="${passwordVal}" style="font-family:monospace; color:var(--purple); font-weight:700; background:var(--purple-light); padding:4px 8px; border-radius:6px; min-width:80px; text-align:center;">${passwordDisplay}</span>
+            <button onclick="toggleRowPassword(${u.id})" class="row-btn-sm" style="border:none; background:transparent; cursor:pointer; font-size:12px;" title="عرض/إخفاء">👁️</button>
+          </div>
+        </td>
+        <td><span class="badge badge-${roleClass[u.role] || 'review'}">${roleLabel[u.role] || u.role}</span></td>
+        <td style="color:var(--text-muted);font-size:13px">${u.created_at ? u.created_at.split(' ')[0] : '—'}</td>
+        <td>
+          <div class="row-actions">
+            <button class="row-btn edit" onclick="editDashUser(${u.id})" title="تعديل">✏️</button>
+            <button class="row-btn delete" onclick="confirmDelete('dashuser', ${u.id})" title="حذف">🗑️</button>
+          </div>
+        </td>
+      </tr>
+    `;
+  }).join("");
 
   const countEl = document.getElementById("dashUsersCount");
   if (countEl) countEl.textContent = `عرض ${filtered.length} حساب`;
@@ -1224,19 +1456,19 @@ function editDashUser(id) {
 
   editingDashUserId = id;
   document.getElementById("dashuserModalTitle").textContent = "تعديل الحساب";
-  document.getElementById("dashuserName").value     = user.name;
-  document.getElementById("dashuserEmail").value    = user.email;
-  document.getElementById("dashuserPassword").value = "";   // never pre-fill password
-  document.getElementById("dashuserRole").value     = user.role;
+  document.getElementById("dashuserName").value = user.name;
+  document.getElementById("dashuserEmail").value = user.email;
+  document.getElementById("dashuserPassword").value = ""; // Clear for editing per previous request
+  document.getElementById("dashuserRole").value = user.role;
 
   openModal("dashuser");
 }
 
 async function saveDashUser() {
-  const name     = document.getElementById("dashuserName").value.trim();
-  const email    = document.getElementById("dashuserEmail").value.trim();
+  const name = document.getElementById("dashuserName").value.trim();
+  const email = document.getElementById("dashuserEmail").value.trim();
   const password = document.getElementById("dashuserPassword").value.trim();
-  const role     = document.getElementById("dashuserRole").value;
+  const role = document.getElementById("dashuserRole").value;
 
   if (!name || !email) {
     showToast("يرجى ملء الاسم والبريد الإلكتروني", "⚠️");
@@ -1248,16 +1480,21 @@ async function saveDashUser() {
   }
 
   const payload = {
-    action:   "saveDashUser",
-    id:       editingDashUserId || null,
+    action: "saveDashUser",
+    id: editingDashUserId || null,
     name, email, password, role
   };
 
+  const saveBtn = document.querySelector("#dashuserModal .btn-primary");
+  const originalText = saveBtn.textContent;
+  saveBtn.disabled = true;
+  saveBtn.textContent = "جاري الحفظ...";
+
   try {
-    const res  = await fetch("api.php", {
-      method:  "POST",
+    const res = await fetch("api.php", {
+      method: "POST",
       headers: { "Content-Type": "application/json" },
-      body:    JSON.stringify(payload)
+      body: JSON.stringify(payload)
     });
     const json = await res.json();
 
@@ -1266,11 +1503,14 @@ async function saveDashUser() {
       closeModal("dashuser");
       fetchDashUsers();
     } else {
-      showToast("خطأ: " + json.message, "❌");
+      showToast(json.message, "❌");
     }
   } catch (err) {
-    showToast("خطأ في الاتصال", "❌");
+    showToast("خطأ في الاتصال بالسيرفر", "❌");
     console.error(err);
+  } finally {
+    saveBtn.disabled = false;
+    saveBtn.textContent = originalText;
   }
 }
 
@@ -1301,7 +1541,20 @@ function initLanguage() {
       document.cookie = "googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
       document.cookie = "googtrans=/auto/ar; path=/; domain=" + window.location.hostname;
     }
-    
+
     window.location.reload();
   });
 }
+
+// Toggle password visibility in dashboard users table
+window.toggleRowPassword = function (id) {
+  const el = document.getElementById(`pass-${id}`);
+  if (!el) return;
+  const actual = el.getAttribute("data-actual");
+  const isHidden = el.textContent.includes("*");
+  if (isHidden) {
+    el.textContent = actual;
+  } else {
+    el.textContent = "*".repeat(Math.min(actual.length, 8));
+  }
+};

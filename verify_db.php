@@ -1,6 +1,6 @@
 <?php
 require_once 'db.php';
-$tables = ['recipes', 'ingredients', 'users', 'favorites', 'recipe_ingredients'];
+$tables = ['recipes', 'ingredients', 'users', 'favorites', 'recipe_ingredients', 'dashlogen', 'contact', 'sine', 'about_page', 'categories'];
 foreach ($tables as $t) {
     echo "--- $t ---\n";
     try {

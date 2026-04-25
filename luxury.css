@@ -4,144 +4,224 @@
     --purple: #8B5CF6;
     --purple-light: rgba(139, 92, 246, 0.15);
     --main-bg: #F8FAFC;
-    --card-bg: rgba(255, 255, 255, 0.85);
-    --sidebar-bg: rgba(255, 255, 255, 0.95);
-    --border: rgba(255, 255, 255, 0.5);
-    --shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
-    --shadow-lg: 0 20px 40px rgba(0, 0, 0, 0.08);
+    --card-bg: rgba(255, 255, 255, 0.75);
+    --sidebar-bg: rgba(255, 255, 255, 0.9);
+    --border: rgba(255, 255, 255, 0.4);
+    --shadow: 0 4px 25px rgba(0, 0, 0, 0.04);
+    --shadow-lg: 0 25px 50px rgba(0, 0, 0, 0.1);
+    --radius-premium: 24px;
 }
 
 body.dark-mode {
-    --main-bg: #0B0E14; /* Deep Obsidian */
-    --card-bg: rgba(20, 25, 35, 0.45);
-    --sidebar-bg: rgba(15, 19, 28, 0.65);
-    --border: rgba(255, 255, 255, 0.04);
-    --shadow: 0 10px 30px rgba(0,0,0,0.5);
-    --shadow-lg: 0 20px 50px rgba(0,0,0,0.7), 0 0 30px rgba(139, 92, 246, 0.07);
-    --text-primary: #F1F5F9;
-    --text-muted: #64748B;
+    --main-bg: #090B10; /* Deeper Obsidian */
+    --card-bg: rgba(17, 24, 39, 0.6);
+    --sidebar-bg: rgba(15, 23, 42, 0.8);
+    --border: rgba(255, 255, 255, 0.05);
+    --shadow: 0 15px 35px rgba(0, 0, 0, 0.6);
+    --shadow-lg: 0 30px 60px rgba(0, 0, 0, 0.8), 0 0 40px rgba(139, 92, 246, 0.1);
 }
 
-/* 1. MESH GRADIENT BACKGROUNDS (DARK MODE) */
+/* 1. DYNAMIC MESH GRADIENT BACKGROUNDS */
+body::before {
+    content: ""; position: fixed; top: -10vh; right: -5vw;
+    width: 70vw; height: 70vh;
+    background: radial-gradient(circle, rgba(139, 92, 246, 0.08) 0%, transparent 70%);
+    z-index: -1; pointer-events: none; filter: blur(80px);
+    animation: float-aura 20s infinite alternate linear;
+}
+
 body.dark-mode::before {
-    content: ""; position: fixed; top: -20vh; right: -10vw;
-    width: 60vw; height: 60vh;
-    background: radial-gradient(circle, rgba(139, 92, 246, 0.15) 0%, transparent 65%);
-    border-radius: 50%; z-index: -1; pointer-events: none; filter: blur(60px);
-}
-body.dark-mode::after {
-    content: ""; position: fixed; bottom: -20vh; left: -10vw;
-    width: 50vw; height: 50vh;
-    background: radial-gradient(circle, rgba(16, 185, 129, 0.1) 0%, transparent 65%);
-    border-radius: 50%; z-index: -1; pointer-events: none; filter: blur(60px);
+    background: radial-gradient(circle, rgba(124, 92, 252, 0.12) 0%, transparent 65%);
 }
 
-/* 2. THE FLOATING ISLAND SIDEBAR */
+@keyframes float-aura {
+    0% { transform: translate(0, 0) scale(1); }
+    100% { transform: translate(5vw, 5vh) scale(1.1); }
+}
+
+/* 2. FLOATING ISLAND SIDEBAR */
 .sidebar {
     width: 280px !important;
-    right: 16px !important;
-    top: 16px !important;
-    bottom: 16px !important;
-    border-radius: 24px !important;
-    backdrop-filter: blur(24px) !important;
-    -webkit-backdrop-filter: blur(24px) !important;
+    right: 20px !important;
+    top: 20px !important;
+    bottom: 20px !important;
+    border-radius: var(--radius-premium) !important;
+    backdrop-filter: blur(30px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(30px) saturate(180%) !important;
     box-shadow: var(--shadow-lg) !important;
     border: 1px solid var(--border) !important;
-    transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) !important;
+    transition: all 0.5s cubic-bezier(0.19, 1, 0.22, 1) !important;
 }
 
-/* Float main content to match island sidebar */
-.main-content {
-    margin-right: 312px !important; /* 280 + 16 gap + 16 outer */
+.main {
+    margin-right: 320px !important;
+    transition: all 0.5s cubic-bezier(0.19, 1, 0.22, 1) !important;
 }
 
 /* 3. FLOATY TOPBAR */
 .topbar {
-    background: rgba(248, 250, 252, 0.6) !important;
-    backdrop-filter: blur(20px) !important;
-    -webkit-backdrop-filter: blur(20px) !important;
-    margin: 16px 16px 24px 16px !important;
-    border-radius: 20px !important;
+    background: var(--card-bg) !important;
+    backdrop-filter: blur(25px) !important;
+    -webkit-backdrop-filter: blur(25px) !important;
+    margin: 20px 20px 30px 20px !important;
+    border-radius: 22px !important;
     box-shadow: var(--shadow) !important;
     border: 1px solid var(--border) !important;
-    top: 16px !important;
+    top: 20px !important;
+    height: 80px !important;
+    display: flex !important;
+    align-items: center !important;
 }
-body.dark-mode .topbar { background: rgba(15, 19, 28, 0.6) !important; }
 
-/* 4. PREMIUM GLASS PANELS & CARDS */
+/* 4. PREMIUM GLASS PANELS */
 .panel {
     background: var(--card-bg) !important;
-    backdrop-filter: blur(16px) !important;
-    -webkit-backdrop-filter: blur(16px) !important;
+    backdrop-filter: blur(20px) !important;
+    -webkit-backdrop-filter: blur(20px) !important;
     border: 1px solid var(--border) !important;
-    transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.4s ease !important;
-    padding: 24px !important;
+    border-radius: var(--radius-premium) !important;
+    transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1) !important;
+    box-shadow: var(--shadow) !important;
 }
+
 .panel:hover {
-    transform: translateY(-5px) !important;
+    transform: translateY(-8px) scale(1.005) !important;
     box-shadow: var(--shadow-lg) !important;
 }
 
-/* 5. GHOST / GLOW BUTTONS */
+/* 5. DYNAMIC SHIMMER BUTTONS */
 .btn-primary {
-    background: linear-gradient(135deg, #8B5CF6, #6D28D9) !important;
+    background: linear-gradient(135deg, #7C3AED, #4F46E5) !important;
     border: none !important;
-    box-shadow: 0 8px 20px rgba(139, 92, 246, 0.3) !important;
-    position: relative;
+    border-radius: 14px !important;
+    letter-spacing: 0.5px;
+    box-shadow: 0 10px 25px rgba(99, 102, 241, 0.3) !important;
     overflow: hidden;
-    color: #fff !important;
-}
-.btn-primary::after {
-    content: ""; position: absolute; top: 0; left: -100%; width: 50%; height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
-    transform: skewX(-20deg); transition: 0s;
-}
-.btn-primary:hover {
-    box-shadow: 0 12px 25px rgba(139, 92, 246, 0.5) !important;
-    transform: translateY(-2px) !important;
-}
-.btn-primary:hover::after { left: 150%; transition: left 0.6s ease; }
-
-/* 6. NEON GLOW HEADINGS (DARK MODE ONLY) */
-body.dark-mode .section-header h2 {
-    background: linear-gradient(to right, #F8FAFC, #94A3B8);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    text-shadow: 0 0 40px rgba(255,255,255,0.1);
 }
 
-/* 7. SLEEK TABLE DESIGN */
-/* Removing harsh lines to let glass take over */
-.data-table th, .data-table td {
-    border-bottom: 1px solid rgba(139, 92, 246, 0.05) !important;
-}
-body.dark-mode .data-table th, body.dark-mode .data-table td {
-    border-bottom: 1px solid rgba(255, 255, 255, 0.03) !important;
+.btn-primary::before {
+    content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: 0.6s; transform: skewX(-25deg);
 }
 
-/* 8. NAV LINKS - CLEANER HOVER */
-.nav-link { font-weight: 700 !important; letter-spacing: 0.3px; }
-.nav-link:hover { transform: translateX(-6px) !important; color: var(--purple) !important; }
-body.dark-mode .nav-link:hover { color: #fff !important; }
+.btn-primary:hover::before { left: 100%; }
 
-/* 9. INPUT FIELDS */
-input, select, textarea {
-    background: rgba(255,255,255,0.5) !important;
-    backdrop-filter: blur(10px) !important;
+/* 6. NEON ACCENTS */
+.badge-active {
+    box-shadow: 0 0 15px rgba(34, 197, 94, 0.2);
+}
+
+/* 7. TABLE TRANSITIONS */
+.data-table tbody tr {
+    transition: all 0.3s ease;
+}
+
+.data-table tbody tr:hover {
+    background: var(--purple-light) !important;
+    transform: scale(1.01) translateX(-5px);
+}
+
+/* 8. LUXURY SCROLLBAR */
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-thumb {
+    background: linear-gradient(to bottom, var(--purple), #a78bfa);
+    border-radius: 20px;
+    border: 2px solid transparent;
+    background-clip: content-box;
+}
+
+/* 9. EXTREME MOBILE POLISH & RESPONSIVENESS */
+@media (max-width: 900px) {
+    .sidebar {
+        right: 0 !important;
+        top: 0 !important;
+        bottom: 0 !important;
+        border-radius: 0 !important;
+        width: 280px !important;
+        transform: translateX(100%) !important;
+    }
+    
+    .sidebar.open {
+        transform: translateX(0) !important;
+    }
+
+    .main {
+        margin-right: 0 !important;
+    }
+
+    .topbar {
+        margin: 10px !important;
+        top: 0 !important;
+        position: relative !important;
+        width: calc(100% - 20px) !important;
+    }
+}
+
+@media (max-width: 600px) {
+    .topbar {
+        padding: 15px !important;
+        flex-direction: column !important;
+        height: auto !important;
+        gap: 15px !important;
+    }
+
+    .topbar-start {
+        width: 100% !important;
+        justify-content: space-between !important;
+    }
+
+    .topbar-end {
+        width: 100% !important;
+        justify-content: center !important;
+        flex-wrap: wrap !important;
+        gap: 10px !important;
+    }
+
+    .search-box {
+        width: 100% !important;
+        border-radius: 12px !important;
+    }
+
+    .panel {
+        padding: 20px !important;
+    }
+
+    .kpi-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 10px !important;
+    }
+}
+
+/* 10. PREMIUM SEARCH DROPDOWN */
+.search-dropdown.glass {
+    background: var(--card-bg) !important;
+    backdrop-filter: blur(25px) !important;
+    -webkit-backdrop-filter: blur(25px) !important;
     border: 1px solid var(--border) !important;
-}
-body.dark-mode input, body.dark-mode select, body.dark-mode textarea {
-    background: rgba(0,0,0,0.2) !important;
-}
-input:focus, select:focus, textarea:focus {
-    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.3) !important;
-    border-color: #8B5CF6 !important;
+    border-radius: 18px !important;
+    box-shadow: var(--shadow-lg) !important;
+    margin-top: 10px !important;
 }
 
-/* 10. HIDE GOOGLE TRANSLATE BANNER TO MAINTAIN LUXURY FEEL */
-body { top: 0 !important; }
-.skiptranslate iframe { display: none !important; }
-#goog-gt-tt { display: none !important; }
-.VIpgJd-ZVi9od-ORHb-OEVmcd { display: none !important; }
-.VIpgJd-ZVi9od-aZ2wEe-wOHMyf { display: none !important; }
+/* 11. NAV LINK HOVER ANIMATION */
+.nav-link {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.nav-link:hover {
+    background: var(--purple-light) !important;
+    letter-spacing: 0.5px !important;
+}
+
+/* 12. GLASS MODALS */
+.modal-content {
+    background: var(--card-bg) !important;
+    backdrop-filter: blur(30px) !important;
+    -webkit-backdrop-filter: blur(30px) !important;
+    border: 1px solid var(--border) !important;
+    border-radius: 28px !important;
+    box-shadow: 0 40px 100px rgba(0,0,0,0.5) !important;
+}
+
 

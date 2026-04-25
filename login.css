@@ -214,6 +214,6 @@ body {
 ::-webkit-scrollbar-thumb { background: var(--text-secondary); border-radius: 10px; }
 
 @media (max-width: 480px) {
-  .login-card { padding: 48px 32px; border-radius: 0; height: 100vh; max-width: 100%; border: none; display: flex; justify-content: center; }
+  .login-card { padding: 48px 32px; border-radius: 0; min-height: 100vh; max-width: 100%; border: none; display: flex; flex-direction: column; justify-content: center; }
   .aura { opacity: 0.3; }
 }

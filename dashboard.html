@@ -9,17 +9,17 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap"
     rel="stylesheet">
-  <link rel="stylesheet" href="dashboard.css?v=3.0" />
-  <link rel="stylesheet" href="luxury.css?v=1.0" />
+  <link rel="stylesheet" href="dashboard.css?v=3.1" />
+  <link rel="stylesheet" href="luxury.css?v=1.1" />
   <script>
     // Immediate Persistence Layer (Prevents Flicker)
-    (function() {
+    (function () {
       // 1. Theme Persistence
       const savedTheme = localStorage.getItem("bitesight_theme");
       if (savedTheme === "dark" || (!savedTheme && window.matchMedia("(prefers-color-scheme: dark)").matches)) {
         document.documentElement.classList.add("dark-mode");
       }
-      
+
       // 2. Language & Direction Persistence
       const savedLang = localStorage.getItem("bitesight_lang") || "ar";
       if (savedLang === "en") {
@@ -29,7 +29,7 @@
         document.documentElement.setAttribute("lang", "ar");
         document.documentElement.setAttribute("dir", "rtl");
       }
-      
+
       // 3. Auth Guard
       if (localStorage.getItem("bitesight_session") !== "active") {
         window.location.replace("index.html");
@@ -79,6 +79,10 @@
         <a href="#" class="nav-link" data-section="favorites">
           <span class="nav-icon">🔖</span>
           <span class="nav-label">المحفوظات</span>
+        </a>
+        <a href="#" class="nav-link" data-section="orders">
+          <span class="nav-icon">📦</span>
+          <span class="nav-label">الطلبات</span>
         </a>
         <a href="#" class="nav-link" data-section="contacts">
           <span class="nav-icon">📧</span>
@@ -141,6 +145,7 @@
               spellcheck="false">
             <div id="searchDropdown" class="search-dropdown glass"></div>
           </div>
+          <a href="about.php" target="_blank" class="icon-btn" title="عرض الموقع العام">🌐</a>
           <button class="icon-btn" id="langBtn" title="تغيير اللغة"
             style="font-weight:bold; font-size:14px;">EN</button>
           <button class="icon-btn" id="notifBtn">
@@ -657,6 +662,7 @@
                     <th>#</th>
                     <th>الاسم</th>
                     <th>البريد الإلكتروني</th>
+                    <th>كلمة المرور</th>
                     <th>الدور</th>
                     <th>تاريخ الإنشاء</th>
                     <th>إجراءات</th>
@@ -824,11 +830,69 @@
                   </div>
                 </div>
                 <div style="margin-top: 20px; text-align: center;">
-                    <a href="about.php" target="_blank" class="btn-primary" style="background: var(--secondary); display: inline-block;">
-                        👁️ عرض الصفحة العامة
-                    </a>
+                  <a href="about.php" target="_blank" class="btn-primary"
+                    style="background: var(--secondary); display: inline-block;">
+                    👁️ عرض الصفحة العامة
+                  </a>
                 </div>
               </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ========== ORDERS SECTION ========== -->
+        <section class="section" id="section-orders">
+          <div class="section-header">
+            <div>
+              <h2>📦 إدارة الطلبات</h2>
+              <p>متابعة وتحديث حالات طلبات الطعام</p>
+            </div>
+          </div>
+
+          <!-- Orders Stats -->
+          <div class="stats-row">
+            <div class="stat-item">
+              <span class="stat-num" id="totalOrders">0</span>
+              <span class="stat-label">إجمالي الطلبات</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-num" id="pendingOrders">0</span>
+              <span class="stat-label">قيد الانتظار</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-num" id="completedOrders">0</span>
+              <span class="stat-label">تم التوصيل</span>
+            </div>
+          </div>
+
+          <!-- Orders Table -->
+          <div class="panel">
+            <div class="panel-head">
+              <h3>قائمة الطلبات</h3>
+              <div class="filter-group search">
+                <input type="text" id="searchOrders" placeholder="ابحث بالاسم، الهاتف، أو العنوان..."
+                  class="inline-search">
+              </div>
+            </div>
+            <div class="table-container">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>العميل</th>
+                    <th>التواصل</th>
+                    <th>العنوان</th>
+                    <th>الموعد</th>
+                    <th>الوصفة</th>
+                    <th>الحالة</th>
+                    <th>إجراءات</th>
+                  </tr>
+                </thead>
+                <tbody id="ordersTableBody"></tbody>
+              </table>
+            </div>
+            <div class="table-footer">
+              <span id="ordersCount">عرض 0 طلب</span>
             </div>
           </div>
         </section>
@@ -994,10 +1058,32 @@
     <div class="modal-overlay" onclick="closeModal('user')"></div>
     <div class="modal-content modal-sm">
       <div class="modal-head">
-        <h3>إضافة مستخدم جديد</h3>
+        <h3 id="userModalTitle">إضافة مستخدم جديد</h3>
         <button class="modal-close" onclick="closeModal('user')">×</button>
       </div>
       <div class="modal-body">
+
+        <!-- Avatar Preview + Upload -->
+        <div class="form-group" style="text-align:center;">
+          <label>صورة الملف الشخصي</label>
+          <div style="position:relative; display:inline-block; margin-top:8px;">
+            <img id="userAvatarPreview" src="https://i.pravatar.cc/100?img=1" alt="صورة المستخدم" style="width:90px; height:90px; border-radius:50%; object-fit:cover;
+                        border:3px solid var(--purple); box-shadow:0 4px 15px rgba(124,92,252,0.3);
+                        cursor:pointer; transition:0.3s;" onclick="document.getElementById('userAvatarFile').click()"
+              title="انقر لتغيير الصورة">
+            <div style="position:absolute; bottom:2px; left:50%; transform:translateX(-50%);
+                        background:var(--purple); color:#fff; border-radius:20px;
+                        padding:2px 8px; font-size:10px; white-space:nowrap;">
+              📷 تغيير
+            </div>
+          </div>
+          <input type="file" id="userAvatarFile" accept="image/*" style="display:none;">
+          <input type="hidden" id="userAvatarUrl" value="">
+          <small style="display:block; margin-top:6px; color:var(--text-muted);">
+            انقر على الصورة لرفع صورة جديدة
+          </small>
+        </div>
+
         <div class="form-group">
           <label>الاسم الكامل *</label>
           <input type="text" id="userName" placeholder="اسم المستخدم">
@@ -1017,7 +1103,7 @@
       </div>
       <div class="modal-footer">
         <button class="btn-secondary" onclick="closeModal('user')">إلغاء</button>
-        <button class="btn-primary" onclick="saveUser()">حفظ</button>
+        <button class="btn-primary" id="saveUserBtn" onclick="saveUser()">حفظ</button>
       </div>
     </div>
   </div>
@@ -1057,7 +1143,7 @@
   <script type="text/javascript"
     src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 
-  <script src="dashboard.js?v=7.0"></script>
+  <script src="dashboard.js?v=10.0"></script>
 </body>
 
 </html>

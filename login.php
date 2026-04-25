@@ -1,17 +1,29 @@
 <?php
+// Prevent any accidental output before headers
+ob_start();
+
 header('Content-Type: application/json; charset=utf-8');
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: POST');
 header('Access-Control-Allow-Headers: Content-Type');
 
+// Include database connection
 require_once 'db.php';
 
+// Check request method
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    echo json_encode(['status' => 'error', 'message' => 'Method not allowed']);
+    echo json_encode(['status' => 'error', 'message' => 'طريقة الطلب غير مسموح بها']);
     exit;
 }
 
-$input = json_decode(file_get_contents('php://input'), true);
+// Get and decode JSON input
+$rawInput = file_get_contents('php://input');
+$input = json_decode($rawInput, true);
+
+if (!$input) {
+    echo json_encode(['status' => 'error', 'message' => 'بيانات الطلب غير صالحة']);
+    exit;
+}
 
 $email    = trim($input['email'] ?? '');
 $password = trim($input['password'] ?? '');
@@ -35,11 +47,15 @@ try {
 
     // Check password - supports both plain text and hashed passwords
     $passwordMatch = false;
-    if (password_verify($password, $user['password'])) {
+    
+    // Check if password column exists and has a value
+    $storedPassword = $user['password'] ?? '';
+    
+    if (password_verify($password, $storedPassword)) {
         // Hashed password (bcrypt)
         $passwordMatch = true;
-    } elseif ($user['password'] === $password) {
-        // Plain text (legacy - should be migrated)
+    } elseif ($storedPassword === $password) {
+        // Plain text (legacy)
         $passwordMatch = true;
     }
 
@@ -48,7 +64,7 @@ try {
         exit;
     }
 
-    // Success - return user info (never return password)
+    // Success - return user info
     echo json_encode([
         'status' => 'success',
         'message' => 'تم تسجيل الدخول بنجاح',
@@ -60,7 +76,13 @@ try {
         ]
     ]);
 
-} catch (Exception $e) {
-    echo json_encode(['status' => 'error', 'message' => 'خطأ في الخادم: ' . $e->getMessage()]);
+} catch (Throwable $e) {
+    // Catch any error or exception
+    echo json_encode([
+        'status' => 'error', 
+        'message' => 'خطأ في الخادم: ' . $e->getMessage()
+    ]);
 }
-?>
+
+// Clear buffer and send output
+ob_end_flush();

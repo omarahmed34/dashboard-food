@@ -57,20 +57,20 @@ function c($field, $content, $lang) {
 
         .aura {
             position: fixed;
-            width: 50vw;
-            height: 50vw;
+            width: 60vw;
+            height: 60vw;
             border-radius: 50%;
             filter: blur(100px);
             z-index: -1;
             opacity: 0.15;
-            animation: pulse 10s infinite alternate;
+            animation: pulse 15s infinite alternate ease-in-out;
         }
-        .aura-1 { top: -10%; left: -10%; background: var(--primary); }
-        .aura-2 { bottom: -10%; right: -10%; background: var(--secondary); }
+        .aura-1 { top: -15%; right: -10%; background: radial-gradient(circle, var(--primary) 0%, transparent 70%); }
+        .aura-2 { bottom: -15%; left: -10%; background: radial-gradient(circle, var(--secondary) 0%, transparent 70%); }
 
         @keyframes pulse {
-            0% { transform: scale(1); opacity: 0.1; }
-            100% { transform: scale(1.2); opacity: 0.2; }
+            0% { transform: translate(0,0) scale(1); opacity: 0.1; }
+            100% { transform: translate(5%, 5%) scale(1.1); opacity: 0.2; }
         }
 
         .container {

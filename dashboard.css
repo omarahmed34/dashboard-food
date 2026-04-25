@@ -65,13 +65,16 @@ html {
     width: 6px;
     height: 6px;
 }
+
 ::-webkit-scrollbar-track {
     background: transparent;
 }
+
 ::-webkit-scrollbar-thumb {
     background: var(--purple-light);
     border-radius: 10px;
 }
+
 ::-webkit-scrollbar-thumb:hover {
     background: var(--purple);
 }
@@ -1630,6 +1633,7 @@ textarea {
         flex: 1;
     }
 }
+
 /* ==================== V2 PREMIUM UPGRADES ==================== */
 
 /* 1. Sleek Scrollbar */
@@ -1637,17 +1641,21 @@ html {
     scrollbar-width: thin;
     scrollbar-color: var(--purple) transparent;
 }
+
 ::-webkit-scrollbar {
     width: 6px;
     height: 6px;
 }
+
 ::-webkit-scrollbar-track {
     background: transparent;
 }
+
 ::-webkit-scrollbar-thumb {
     background: var(--purple-light);
     border-radius: 10px;
 }
+
 ::-webkit-scrollbar-thumb:hover {
     background: var(--purple);
 }
@@ -1657,10 +1665,12 @@ html {
     transition: transform 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28), box-shadow 0.3s ease;
     border: 1px solid rgba(255, 255, 255, 0.05);
 }
+
 .panel:hover {
     transform: translateY(-4px);
     box-shadow: 0 15px 35px rgba(124, 92, 252, 0.08);
 }
+
 body.dark-mode .panel:hover {
     box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4), 0 0 15px rgba(124, 92, 252, 0.1);
 }
@@ -1668,6 +1678,7 @@ body.dark-mode .panel:hover {
 .kpi-card {
     transition: transform 0.4s ease, filter 0.4s ease;
 }
+
 .kpi-card:hover {
     transform: scale(1.02) translateY(-2px);
     filter: brightness(1.1);
@@ -1679,6 +1690,7 @@ body.dark-mode .panel:hover {
     position: relative;
     overflow: hidden;
 }
+
 .btn-primary::after {
     content: "";
     position: absolute;
@@ -1686,39 +1698,71 @@ body.dark-mode .panel:hover {
     left: -50%;
     width: 200%;
     height: 200%;
-    background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, transparent 60%);
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.15) 0%, transparent 60%);
     opacity: 0;
     transition: opacity 0.3s ease;
 }
+
 .btn-primary:hover::after {
     opacity: 1;
 }
 
 /* 4. Table Row Entrance Animation */
 @keyframes rowFadeIn {
-    from { opacity: 0; transform: translateY(15px); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+        opacity: 0;
+        transform: translateY(15px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .data-table tbody tr {
     animation: rowFadeIn 0.4s ease-out forwards;
     opacity: 0;
 }
-.data-table tbody tr:nth-child(1) { animation-delay: 0.05s; }
-.data-table tbody tr:nth-child(2) { animation-delay: 0.1s; }
-.data-table tbody tr:nth-child(3) { animation-delay: 0.15s; }
-.data-table tbody tr:nth-child(4) { animation-delay: 0.2s; }
-.data-table tbody tr:nth-child(5) { animation-delay: 0.25s; }
-.data-table tbody tr:nth-child(n+6) { animation-delay: 0.3s; }
+
+.data-table tbody tr:nth-child(1) {
+    animation-delay: 0.05s;
+}
+
+.data-table tbody tr:nth-child(2) {
+    animation-delay: 0.1s;
+}
+
+.data-table tbody tr:nth-child(3) {
+    animation-delay: 0.15s;
+}
+
+.data-table tbody tr:nth-child(4) {
+    animation-delay: 0.2s;
+}
+
+.data-table tbody tr:nth-child(5) {
+    animation-delay: 0.25s;
+}
+
+.data-table tbody tr:nth-child(n+6) {
+    animation-delay: 0.3s;
+}
 
 /* 5. Inputs and Focus Styles */
-input, select, textarea {
+input,
+select,
+textarea {
     transition: all 0.25s ease;
 }
-input:focus, select:focus, textarea:focus {
+
+input:focus,
+select:focus,
+textarea:focus {
     box-shadow: 0 0 0 3px rgba(124, 92, 252, 0.25);
     background: transparent;
 }
+
 body.dark-mode input:focus {
     background: rgba(0, 0, 0, 0.2);
 }
@@ -1729,18 +1773,3 @@ body.dark-mode input:focus {
     padding: 0 46px;
     border-radius: 22px;
 }
-
-
- 
- / *   E x t r e m e   M o b i l e   P o l i s h   * / 
- @ m e d i a   ( m a x - w i d t h :   6 0 0 p x )   { 
-         . k p i - g r i d   {   g r i d - t e m p l a t e - c o l u m n s :   r e p e a t ( 2 ,   1 f r )   ! i m p o r t a n t ;   g a p :   1 0 p x   ! i m p o r t a n t ;   } 
-         . t o p b a r   {   f l e x - d i r e c t i o n :   c o l u m n   ! i m p o r t a n t ;   a l i g n - i t e m s :   s t r e t c h   ! i m p o r t a n t ;   p a d d i n g :   1 2 p x   ! i m p o r t a n t ;   } 
-         . t o p b a r - s t a r t   {   j u s t i f y - c o n t e n t :   s p a c e - b e t w e e n   ! i m p o r t a n t ;   } 
-         . t o p b a r - e n d   {   j u s t i f y - c o n t e n t :   c e n t e r   ! i m p o r t a n t ;   f l e x - w r a p :   w r a p   ! i m p o r t a n t ;   g a p :   8 p x   ! i m p o r t a n t ;   m a r g i n - t o p :   8 p x   ! i m p o r t a n t ;   } 
-         . t a b l e - c o n t a i n e r   {   o v e r f l o w - x :   a u t o   ! i m p o r t a n t ;   - w e b k i t - o v e r f l o w - s c r o l l i n g :   t o u c h   ! i m p o r t a n t ;   } 
-         . d a t a - t a b l e   {   m i n - w i d t h :   6 0 0 p x   ! i m p o r t a n t ;   } 
-         . c o n t e n t   {   p a d d i n g :   1 2 p x   ! i m p o r t a n t ;   } 
-         . p a n e l - h e a d   {   f l e x - d i r e c t i o n :   c o l u m n   ! i m p o r t a n t ;   a l i g n - i t e m s :   f l e x - s t a r t   ! i m p o r t a n t ;   } 
- }  
- 
